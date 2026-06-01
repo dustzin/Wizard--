@@ -1,0 +1,2550 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WIZARD - Automação de Infoprodutos</title>
+  <!-- Google Fonts: Inter (Professional SaaS Font) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS v3 CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              purple: '#8B5CF6',
+              purpleLight: '#C084FC',
+              purpleDark: '#7C3AED',
+              green: '#10B981',
+              greenLight: '#34D399',
+              darkBg: '#090A0F',
+              cardBg: '#111218',
+              border: '#1F2029',
+              borderHover: '#2A2C3A',
+              textGray: '#94A3B8'
+            }
+          },
+          boxShadow: {
+            purpleGlow: '0 0 25px rgba(139, 92, 246, 0.12)',
+            purpleGlowStrong: '0 0 35px rgba(139, 92, 246, 0.25)',
+            greenGlow: '0 0 25px rgba(16, 185, 129, 0.12)',
+            greenGlowStrong: '0 0 35px rgba(16, 185, 129, 0.25)'
+          },
+          animation: {
+            'pulse-slow': 'pulse 3.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #090A0F;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
+    }
+    .glass {
+      background: rgba(17, 18, 24, 0.55);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fade 0.35s ease forwards;
+    }
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    #particle-canvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Wait Stage Keyframe Compiler Scanner */
+    @keyframes scanline {
+      0% { top: 0%; }
+      50% { top: 100%; }
+      100% { top: 0%; }
+    }
+    .animate-scan {
+      animation: scanline 4s linear infinite;
+    }
+
+    /* 3D Book Cover styling */
+    .book-scene {
+      perspective: 900px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .book-3d {
+      position: relative;
+      width: 160px; height: 210px;
+      transform-style: preserve-3d;
+      transform: rotateY(-28deg) rotateX(4deg);
+      animation: bookFloat 4s ease-in-out infinite;
+      filter: drop-shadow(0 30px 40px rgba(139,92,246,0.35));
+    }
+    @keyframes bookFloat {
+      0%, 100% { transform: rotateY(-28deg) rotateX(4deg) translateY(0px); }
+      50%       { transform: rotateY(-28deg) rotateX(4deg) translateY(-10px); }
+    }
+    .book-front {
+      transform: translateZ(18px);
+      display: flex; flex-direction: column;
+      padding: 18px 14px;
+      justify-content: space-between;
+      border: 1px solid rgba(167,139,250,0.25);
+      overflow: hidden;
+      position: absolute;
+      width: 160px; height: 210px;
+      border-radius: 3px 8px 8px 3px;
+    }
+    .book-front::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 60%);
+      border-radius: inherit;
+    }
+    .book-spine {
+      position: absolute; left: -18px; top: 0;
+      width: 18px; height: 210px;
+      background: linear-gradient(to right, #2d1a66, #4c1d95);
+      transform: rotateY(-90deg) translateZ(9px) translateX(-9px);
+      border-radius: 3px 0 0 3px;
+      border: 1px solid rgba(109,40,217,0.4);
+    }
+    .book-back {
+      position: absolute; width: 160px; height: 210px;
+      background: linear-gradient(to right, #1a0d3a, #1e1040);
+      transform: translateZ(-18px) rotateY(180deg);
+      border-radius: 8px 3px 3px 8px;
+    }
+    .book-pages {
+      position: absolute; right: -6px; top: 4px;
+      width: 10px; height: 202px;
+      background: repeating-linear-gradient(to bottom, #e5e7eb 0px, #e5e7eb 1px, #f9fafb 1px, #f9fafb 3px);
+      border-radius: 0 2px 2px 0;
+      transform: translateZ(0px) rotateY(90deg) translateX(5px);
+    }
+    @keyframes revealBook {
+      from { opacity: 0; transform: rotateY(-28deg) rotateX(4deg) scale(0.7); }
+      to   { opacity: 1; transform: rotateY(-28deg) rotateX(4deg) scale(1); }
+    }
+    .book-3d.animate-in {
+      animation: revealBook 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards, bookFloat 4s ease-in-out 0.8s infinite;
+    }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-slide-up {
+      animation: fadeSlideUp 0.6s ease forwards;
+    }
+  </style>
+</head>
+<body class="text-white font-sans h-screen max-h-screen relative flex overflow-hidden">
+
+  <!-- Toast Notification Container (Top-Right) -->
+  <div id="toast-container" class="fixed top-6 right-6 z-[9000] flex flex-col gap-3 pointer-events-none">
+    <!-- Toasts insert dynamically here -->
+  </div>
+
+  <!-- Particle Canvas Background -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- Left Sidebar -->
+  <aside class="w-64 border-r border-brand-border bg-black/40 flex flex-col shrink-0 hidden lg:flex select-none">
+    <div class="p-6 border-b border-brand-border flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-black/30 border border-white/10 flex items-center justify-center overflow-hidden shadow-purpleGlow relative">
+        <img src="images/wizard_logo.png" class="w-full h-full object-cover animate-pulse" alt="Wizard A.I. Logo">
+      </div>
+      <div>
+        <span class="font-extrabold text-base tracking-wider uppercase">WIZARD</span>
+        <span class="block text-[8px] text-brand-green font-bold tracking-widest -mt-0.5 uppercase">A.I. Low-Ticket SaaS</span>
+      </div>
+    </div>
+    
+    <div class="p-4 flex-1 space-y-1">
+      <div class="px-3 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Painel de Controle</div>
+      <button onclick="switchTab('dashboard-tab', this)" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-brand-purple/10 border border-brand-purple/20 text-white font-medium text-xs shadow-purpleGlow transition-all tab-btn">
+        <i class="fa-solid fa-chart-line text-brand-purple"></i> Dashboard Principal
+      </button>
+      <button onclick="switchTab('wizard-tab', this)" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-textGray hover:text-white hover:bg-white/5 transition-all text-xs text-left tab-btn">
+        <i class="fa-solid fa-wand-magic"></i> Criar Estrutura
+      </button>
+      <button onclick="switchTab('integrations-tab', this)" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-textGray hover:text-white hover:bg-white/5 transition-all text-xs text-left tab-btn">
+        <i class="fa-solid fa-circle-nodes"></i> Integrações de Checkout
+      </button>
+    </div>
+
+    <div class="p-4 border-t border-brand-border bg-black/20">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-brand-purple animate-pulse"></span>
+        <span class="text-[9px] text-brand-purpleLight font-bold uppercase tracking-widest">Acesso Cliente Ativo</span>
+      </div>
+      <p class="text-[9px] text-zinc-500 mt-1 leading-relaxed">
+        Sistemas operando perfeitamente. Conexões locais livres de taxas.
+      </p>
+    </div>
+  </aside>
+
+  <!-- Persistent Main Area -->
+  <main class="flex-1 flex flex-col min-w-0 h-screen max-h-screen overflow-hidden relative z-10">
+    <!-- Navbar Header -->
+    <header class="h-14 border-b border-brand-border bg-black/40 px-6 flex justify-between items-center shrink-0" style="box-shadow: 0 1px 0 rgba(139,92,246,0.08);">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-brand-purple flex items-center justify-center shadow-purpleGlow">
+          <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+        </div>
+        <span class="font-extrabold text-sm tracking-widest uppercase">WIZARD</span>
+      </div>
+      <div class="flex items-center gap-2 bg-brand-green/10 border border-brand-green/25 px-3 py-1.5 rounded-full" id="live-connection-badge">
+        <span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse"></span>
+        <span class="text-[9px] font-black text-brand-green uppercase tracking-widest">Conexão Segura</span>
+      </div>
+    </header>
+
+    <!-- Scrollable content panel -->
+    <div class="flex-1 p-6 md:p-8 overflow-y-auto no-scrollbar space-y-6 max-w-5xl w-full mx-auto">
+      
+      <!-- ========================================== -->
+      <!-- TAB 1: DASHBOARD MAIN (ZEROED OUT FOR CLIENT) -->
+      <!-- ========================================== -->
+      <div id="dashboard-tab" class="tab-content active space-y-6">
+        
+        <!-- Top Banner: Wizard Pro Painel de Controle -->
+        <div class="glass border border-brand-purple/10 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden" style="background: linear-gradient(135deg, rgba(20,10,40,0.45) 0%, rgba(10,5,25,0.45) 100%);">
+          <div class="absolute -right-24 -top-24 w-48 h-48 rounded-full bg-brand-purple/10 blur-3xl"></div>
+          <div class="space-y-2 relative z-10">
+            <span class="px-2.5 py-1 rounded-full bg-brand-purple/15 text-[8px] font-black text-brand-purpleLight uppercase tracking-[0.25em] border border-brand-purple/20"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> SISTEMA OPERACIONAL WIZARD</span>
+            <h2 class="font-outfit font-black text-2xl text-white tracking-tight leading-none">Painel de Controle <span class="text-brand-purpleLight font-bold">WIZARD PRO</span></h2>
+            <p class="text-[10px] text-zinc-400 font-medium leading-relaxed max-w-2xl">
+              Monitore suas vendas em tempo real, acompanhe gráficos de faturamento integrados e inicie o assistente inteligente para estruturar novos infoprodutos completos de alta conversão.
+            </p>
+          </div>
+          <button onclick="switchTab('wizard-tab', document.querySelector('button[onclick*=\'wizard-tab\']'))" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-purple to-brand-purpleLight text-xs font-black text-white hover:shadow-purpleGlow transition-all duration-300 flex items-center gap-2 group border border-white/10 shrink-0 relative z-10 shadow-purpleGlow">
+            Criar Novo Produto <i class="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1"></i>
+          </button>
+        </div>
+
+        <!-- 2-Column Responsive Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Left/Center Column -->
+          <div class="lg:col-span-2 space-y-6 flex flex-col justify-between">
+            
+            <!-- Top Row Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              
+              <!-- Card 1: Faturamento Acumulado (Zeroed) -->
+              <div class="metric-card glass border-l-4 border-l-brand-green border-y border-r border-white/5 rounded-2xl p-5 relative overflow-hidden group hover:border-brand-green/30 transition-all duration-500" style="box-shadow: 0 0 30px rgba(16,185,129,0.02);">
+                <div class="flex justify-between items-start mb-3">
+                  <span class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">Faturamento Acumulado</span>
+                  <span class="text-brand-green text-xs font-bold"><i class="fa-solid fa-dollar-sign"></i></span>
+                </div>
+                <div class="text-3xl font-black text-white tracking-tight flex items-baseline gap-1" id="total-revenue">R$ 0,00</div>
+                <div class="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
+                  <span class="px-2 py-0.5 rounded bg-zinc-800 text-zinc-500 text-[8px] font-black uppercase tracking-wider select-none font-mono">Nenhuma venda hoje</span>
+                  <span class="text-[8px] text-zinc-500 font-mono">Gateway conectado</span>
+                </div>
+              </div>
+
+              <!-- Card 2: Performance Integrada (Zeroed) -->
+              <div class="metric-card glass border-l-4 border-l-brand-purple border-y border-r border-white/5 rounded-2xl p-5 relative overflow-hidden hover:border-brand-purple/30 transition-all duration-500" style="box-shadow: 0 0 30px rgba(139,92,246,0.02);">
+                <div class="flex justify-between items-start mb-3">
+                  <span class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">Performance Integrada</span>
+                  <span class="text-brand-purpleLight text-xs font-bold"><i class="fa-regular fa-clock"></i></span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mt-1">
+                  <!-- Conversão -->
+                  <div class="space-y-1">
+                    <div class="flex justify-between text-[8px] font-mono text-zinc-400">
+                      <span>CONVERSÃO</span><span class="text-brand-green font-bold" id="conversion-rate">0.0%</span>
+                    </div>
+                    <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                      <div class="h-full rounded-full bg-brand-green" id="conversion-progress" style="width:0%;"></div>
+                    </div>
+                  </div>
+                  <!-- Estruturas -->
+                  <div class="space-y-1">
+                    <div class="flex justify-between text-[8px] font-mono text-zinc-400">
+                      <span>ESTRUTURAS</span><span class="text-brand-purpleLight font-bold" id="structures-count">0 / 10</span>
+                    </div>
+                    <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                      <div class="h-full rounded-full bg-brand-purpleLight" id="structures-progress" style="width:0%;"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[8px] text-zinc-500 font-mono" id="performance-status-bar">
+                  <span>AGUARDANDO INTEGRAÇÃO</span>
+                  <span>0 ATIVAS</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Line Chart Card (Flat 0) -->
+            <div class="glass border border-brand-border rounded-2xl p-5 relative overflow-hidden" style="box-shadow: 0 0 40px rgba(0,0,0,0.2);">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <span class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">Gráfico de Vendas</span>
+                  <p class="text-[9px] text-zinc-400 font-medium">Trajetória de faturamento acumulada nas últimas 24h</p>
+                </div>
+                <div class="flex items-center gap-1.5 text-[8px] text-zinc-400 font-bold bg-white/5 px-2 py-1 rounded border border-white/5 uppercase">
+                  <span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse"></span> Receita (R$)
+                </div>
+              </div>
+
+              <!-- Line Chart SVG -->
+              <div class="relative w-full h-44 md:h-52 mt-1">
+                <svg viewBox="0 0 500 200" class="w-full h-full" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#10B981" stop-opacity="0.15"/>
+                      <stop offset="100%" stop-color="#10B981" stop-opacity="0.00"/>
+                    </linearGradient>
+                    <filter id="greenGlowFilter">
+                      <feGaussianBlur stdDeviation="2" result="blur"/>
+                      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                  </defs>
+                  <!-- Grid Lines -->
+                  <line x1="0" y1="40" x2="500" y2="40" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+                  <line x1="0" y1="80" x2="500" y2="80" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+                  <line x1="0" y1="120" x2="500" y2="120" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+                  <line x1="0" y1="160" x2="500" y2="160" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+                  <!-- Graph Paths (Flat baseline at y=190) -->
+                  <path d="M 0 190 Q 70 190 120 190 T 250 190 T 370 190 T 500 190 L 500 200 L 0 200 Z" fill="url(#chart-grad)"/>
+                  <path d="M 0 190 Q 70 190 120 190 T 250 190 T 370 190 T 500 190" fill="none" stroke="#10B981" stroke-width="2.5" filter="url(#greenGlowFilter)"/>
+                  <circle cx="500" cy="190" r="5.5" fill="#10B981" filter="url(#greenGlowFilter)"/>
+                </svg>
+                <div class="absolute right-2 top-2 bg-brand-green/10 text-brand-green text-[8px] font-black px-2 py-0.5 rounded border border-brand-green/20 font-mono tracking-wider">
+                  PICO: R$ 0,00
+                </div>
+                
+                <div class="absolute left-1 top-0 bottom-0 flex flex-col justify-between text-[7px] text-zinc-500 font-mono">
+                  <span>R$ 10k</span>
+                  <span>R$ 7.5k</span>
+                  <span>R$ 5k</span>
+                  <span>R$ 2.5k</span>
+                  <span>R$ 0</span>
+                </div>
+              </div>
+              <div class="flex justify-between items-center text-[7px] text-zinc-600 pt-3 border-t border-white/5 mt-3 font-mono uppercase tracking-wider">
+                <span>-2h</span><span>-1h30</span><span>-1h</span><span>-30m</span><span class="text-brand-green font-black">Agora ●</span>
+              </div>
+            </div>
+
+            <!-- Meta Diária Card (Zeroed) -->
+            <div class="glass border border-brand-purple/20 rounded-2xl p-5 relative overflow-hidden shadow-purpleGlow" id="meta-diaria-card">
+              <div class="absolute -right-16 -top-16 w-36 h-36 rounded-full bg-brand-purple/10 blur-2xl"></div>
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                <div>
+                  <span class="text-[8px] font-black text-brand-purpleLight uppercase tracking-[0.25em]">Objetivo Diário</span>
+                  <h4 class="font-extrabold text-[10px] text-white mt-0.5">Progresso para Meta de Faturamento do Dia</h4>
+                </div>
+                <div class="flex items-center gap-2 font-mono text-[9px]">
+                  <span class="text-zinc-500">META:</span>
+                  <span class="text-brand-purpleLight font-black">R$ 50.000,00</span>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between text-[10px] font-mono select-none">
+                  <span class="text-brand-green font-bold" id="meta-progress-label">R$ 0,00 (0.00%)</span>
+                  <span class="text-zinc-500" id="meta-remaining-label">Restam R$ 50.000,00</span>
+                </div>
+                <div class="w-full bg-white/5 h-2.5 rounded-full overflow-hidden p-0.5 border border-white/5">
+                  <div class="h-full rounded-full bg-gradient-to-r from-brand-purple via-brand-purpleLight to-brand-green shadow-greenGlow transition-all duration-1000 relative" id="meta-progress-bar" style="width: 0%;">
+                    <div class="absolute right-0 top-0 bottom-0 w-2 bg-white rounded-full blur-[2px] animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column (Conversões Ao Vivo - Zeroed) -->
+          <div class="glass border border-brand-border rounded-2xl p-5 flex flex-col justify-between" style="box-shadow: 0 0 45px rgba(0,0,0,0.35);">
+            <div class="space-y-4">
+              <div class="flex justify-between items-center pb-3 border-b border-white/5">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-zinc-600"></span>
+                  <h3 class="font-outfit font-black text-xs text-white uppercase tracking-wider">Conversões Ao Vivo</h3>
+                </div>
+                <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-zinc-400 text-[8px] font-black uppercase tracking-widest font-mono" id="live-sales-count-badge">0 Vendas</span>
+              </div>
+
+              <!-- Empty State conversions container -->
+              <div class="space-y-3 max-h-[360px] overflow-y-auto pr-1 no-scrollbar flex flex-col items-center justify-center text-center py-20" id="live-conversions-list">
+                <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center border border-white/10 text-zinc-500 mb-2">
+                  <i class="fa-solid fa-chart-line text-lg"></i>
+                </div>
+                <div>
+                  <span class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Aguardando Vendas</span>
+                  <span class="block text-[8px] text-zinc-500 mt-1 leading-relaxed max-w-[180px] mx-auto">Conecte seu gateway no menu lateral de Integrações para receber notificações Pix em tempo real.</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="pt-4 border-t border-white/5 text-center text-[8px] text-zinc-500 font-mono select-none">
+              NENHUMA VENDA DETECTADA HOJE
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- WIZARD CORE GENERATOR -->
+      <!-- ========================================== -->
+      <div id="wizard-tab" class="tab-content space-y-6">
+        <div class="glass border border-brand-border rounded-2xl p-6 md:p-8 relative overflow-hidden">
+          <!-- Header wizard -->
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-brand-border mb-8">
+            <div>
+              <h2 class="font-extrabold text-lg flex items-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles text-brand-purple"></i> Criar Nova Estrutura Wizard A.I.
+              </h2>
+              <p class="text-xs text-zinc-500 mt-0.5 font-medium">Siga as etapas para criar seu infoproduto, LP e copy em minutos.</p>
+            </div>
+            
+            <!-- Indicator Steps -->
+            <div class="flex flex-wrap gap-1.5 text-[9px] font-mono select-none" id="wizard-indicators">
+              <span id="ind-1" class="px-2.5 py-1 rounded bg-brand-purple/20 text-brand-purpleLight border border-brand-purple/30">1. Nicho</span>
+              <span id="ind-2" class="px-2.5 py-1 rounded bg-white/5 text-zinc-500">2. Ebook</span>
+              <span id="ind-3" class="px-2.5 py-1 rounded bg-white/5 text-zinc-500">3. Design</span>
+              <span id="ind-4" class="px-2.5 py-1 rounded bg-white/5 text-zinc-500">4. LP</span>
+              <span id="ind-5" class="px-2.5 py-1 rounded bg-white/5 text-zinc-500">5. Preview</span>
+              <span id="ind-6" class="px-2.5 py-1 rounded bg-white/5 text-zinc-500">6. Tráfego</span>
+              <span id="ind-7" class="px-2.5 py-1 rounded bg-white/5 text-zinc-500">7. Entrega</span>
+            </div>
+          </div>
+
+          <!-- STAGE 1: NICHE SELECTION -->
+          <div id="stage-1" class="space-y-6 stage-panel">
+            <h3 class="font-bold text-sm text-white uppercase tracking-wider">Passo 1: Selecione o Nicho e o Subnicho do Produto</h3>
+            
+            <!-- Niche selector grid -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <button onclick="selectNiche('saude')" id="n-card-saude" class="n-card p-5 rounded-xl border border-brand-border bg-white/5 hover:border-brand-purple/40 hover:bg-brand-purple/5 text-center flex flex-col items-center justify-center gap-3 transition-all duration-300 group">
+                <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-emerald-400 text-lg group-hover:scale-105 transition-transform">
+                  <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <span class="text-xs font-bold tracking-wide">Saúde & Bem-Estar</span>
+              </button>
+              
+              <button onclick="selectNiche('financas')" id="n-card-financas" class="n-card p-5 rounded-xl border border-brand-border bg-white/5 hover:border-brand-purple/40 hover:bg-brand-purple/5 text-center flex flex-col items-center justify-center gap-3 transition-all duration-300 group">
+                <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-amber-400 text-lg group-hover:scale-105 transition-transform">
+                  <i class="fa-solid fa-piggy-bank"></i>
+                </div>
+                <span class="text-xs font-bold tracking-wide">Finanças & Crypto</span>
+              </button>
+
+              <button onclick="selectNiche('relacionamentos')" id="n-card-relacionamentos" class="n-card p-5 rounded-xl border border-brand-border bg-white/5 hover:border-brand-purple/40 hover:bg-brand-purple/5 text-center flex flex-col items-center justify-center gap-3 transition-all duration-300 group">
+                <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-red-400 text-lg group-hover:scale-105 transition-transform">
+                  <i class="fa-solid fa-heart"></i>
+                </div>
+                <span class="text-xs font-bold tracking-wide">Relacionamentos</span>
+              </button>
+
+              <button onclick="selectNiche('negocios')" id="n-card-negocios" class="n-card p-5 rounded-xl border border-brand-border bg-white/5 hover:border-brand-purple/40 hover:bg-brand-purple/5 text-center flex flex-col items-center justify-center gap-3 transition-all duration-300 group">
+                <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-brand-purpleLight text-lg group-hover:scale-105 transition-transform">
+                  <i class="fa-solid fa-laptop-code"></i>
+                </div>
+                <span class="text-xs font-bold tracking-wide">Negócios Digitais</span>
+              </button>
+
+              <button onclick="selectNiche('pets')" id="n-card-pets" class="n-card p-5 rounded-xl border border-brand-border bg-white/5 hover:border-brand-purple/40 hover:bg-brand-purple/5 text-center flex flex-col items-center justify-center gap-3 transition-all duration-300 group">
+                <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-orange-400 text-lg group-hover:scale-105 transition-transform">
+                  <i class="fa-solid fa-dog"></i>
+                </div>
+                <span class="text-xs font-bold tracking-wide">Pets & Adestramento</span>
+              </button>
+
+              <button onclick="selectNiche('espiritualidade')" id="n-card-espiritualidade" class="n-card p-5 rounded-xl border border-brand-border bg-white/5 hover:border-brand-purple/40 hover:bg-brand-purple/5 text-center flex flex-col items-center justify-center gap-3 transition-all duration-300 group">
+                <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-indigo-400 text-lg group-hover:scale-105 transition-transform">
+                  <i class="fa-solid fa-wand-sparkles"></i>
+                </div>
+                <span class="text-xs font-bold tracking-wide">Espiritualidade</span>
+              </button>
+            </div>
+
+            <!-- Subnicho Select -->
+            <div id="subniche-box" class="hidden glass border border-brand-border rounded-xl p-5 space-y-4">
+              <h4 class="font-bold text-xs uppercase tracking-wider text-brand-purpleLight">Mapear Produto e Definir Preço</h4>
+              
+              <div class="flex flex-col md:flex-row gap-4 items-end">
+                <div class="flex-1 w-full">
+                  <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1.5">Produto:</label>
+                  <div class="relative">
+                    <select id="niche-product-select" class="w-full bg-black/40 border border-brand-border rounded-lg px-4 py-3 text-xs outline-none cursor-pointer appearance-none">
+                      <!-- populated via javascript -->
+                    </select>
+                    <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-brand-purpleLight text-[10px]">
+                      <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Custom Price selector step -->
+                <div class="w-full md:w-48">
+                  <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1.5">Preço de Venda (Pix):</label>
+                  <div class="relative">
+                    <select id="niche-price-select" class="w-full bg-black/40 border border-brand-border rounded-lg px-4 py-3 text-xs outline-none cursor-pointer appearance-none text-brand-green font-bold">
+                      <option value="9.90" class="bg-[#0B0D15]">R$ 9,90</option>
+                      <option value="19.90" class="bg-[#0B0D15]">R$ 19,90</option>
+                      <option value="27.90" class="bg-[#0B0D15]">R$ 27,90</option>
+                      <option value="37.90" class="bg-[#0B0D15]">R$ 37,90</option>
+                      <option value="47.90" class="bg-[#0B0D15]">R$ 47,90</option>
+                      <option value="67.90" class="bg-[#0B0D15]" selected>R$ 67,90</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-brand-purpleLight text-[10px]">
+                      <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <button onclick="advanceToStage2()" class="w-full md:w-auto px-8 py-3.5 bg-brand-purple hover:bg-brand-purpleDark text-white font-bold text-xs rounded-lg shadow-purpleGlow transition-all shrink-0">
+                  Avançar para Criar Ebook <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- STAGE 2: EBOOK CREATION (50 Seconds Delay) -->
+          <div id="stage-2" class="hidden text-center space-y-8 py-10 stage-panel">
+            <!-- Matrix Neural Interface -->
+            <div class="relative w-full max-w-lg mx-auto h-48 rounded-2xl border border-brand-purple/20 bg-black/60 overflow-hidden flex flex-col justify-center items-center shadow-purpleGlow p-4">
+              <!-- Laser Scanner Line -->
+              <div class="absolute top-0 left-0 right-0 h-[2px] bg-brand-green shadow-greenGlow animate-scan pointer-events-none"></div>
+              <!-- Neural Matrix Canvas -->
+              <canvas id="neural-canvas-s2" class="absolute inset-0 opacity-40 pointer-events-none"></canvas>
+              
+              <div class="relative z-10 space-y-3">
+                <div class="flex items-center justify-center gap-2 text-brand-green font-mono text-[9px] bg-brand-green/10 border border-brand-green/20 px-3 py-1 rounded-full uppercase tracking-wider animate-pulse">
+                  <span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-ping"></span> Compilador IA Ativo
+                </div>
+                <h3 class="font-extrabold text-sm text-white tracking-wide" id="s2-stage-label">Estruturando Capítulos do PLR...</h3>
+                <div class="text-[10px] text-zinc-500 font-medium">Aperte <kbd class="px-1 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono text-[9px]">S</kbd> para acelerar compilação</div>
+              </div>
+            </div>
+
+            <div class="max-w-sm mx-auto space-y-3">
+              <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden p-0.5 border border-white/5">
+                <div id="s2-progress" class="bg-gradient-to-r from-brand-purple to-brand-green h-full w-[0%] transition-all duration-300 shadow-purpleGlow"></div>
+              </div>
+              <div class="flex justify-between text-[9px] font-mono text-zinc-500 uppercase">
+                <span id="s2-percentage">0%</span>
+                <span id="s2-timer">Restam 50s</span>
+              </div>
+            </div>
+
+            <div class="w-full max-w-lg bg-black/60 border border-brand-border rounded-lg p-4 font-mono text-[9px] text-brand-green h-40 overflow-y-auto space-y-1 text-left no-scrollbar mx-auto" id="s2-logs">
+              <!-- Log typewriter dynamic -->
+            </div>
+          </div>
+
+          <!-- STAGE 2B: EBOOK REVEAL -->
+          <div id="stage-2b" class="hidden stage-panel">
+            <!-- Success banner -->
+            <div class="flex items-center gap-3 bg-brand-green/10 border border-brand-green/25 rounded-xl p-4 mb-8 fade-slide-up">
+              <i class="fa-solid fa-circle-check text-brand-green text-lg"></i>
+              <div>
+                <h4 class="font-bold text-xs text-white">Ebook Gerado com Sucesso!</h4>
+                <p class="text-[10px] text-zinc-400">Seu infoproduto foi diagramado e está pronto para entrega instantânea após a venda.</p>
+              </div>
+              <span id="s2b-badge" class="ml-auto px-3 py-1 bg-brand-green/15 border border-brand-green/25 text-brand-green text-[9px] font-extrabold rounded-full uppercase tracking-wider">PLR Livre</span>
+            </div>
+
+            <!-- Main reveal layout -->
+            <div class="flex flex-col md:flex-row gap-10 items-center justify-center">
+
+              <!-- 3D Book mockup -->
+              <div class="book-scene shrink-0">
+                <div class="book-3d animate-in" id="s2b-book">
+                  <div class="book-spine"></div>
+                  <div class="book-pages"></div>
+                  <div class="book-back"></div>
+                  <div class="book-front">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[7px] font-extrabold uppercase tracking-widest text-purple-300/70">WIZARD A.I.</span>
+                      <i id="s2b-icon" class="fa-solid fa-book text-white/50 text-xs"></i>
+                    </div>
+                    <div class="space-y-2">
+                      <div class="w-8 h-0.5 bg-white/30 rounded"></div>
+                      <h3 id="s2b-book-title" class="font-extrabold text-white text-sm leading-tight uppercase tracking-wide">Ebook Title</h3>
+                      <div class="w-5 h-0.5 bg-purple-400/50 rounded"></div>
+                    </div>
+                    <div>
+                      <div class="text-[6px] font-bold uppercase text-purple-300/60 tracking-widest">EBOOK COMPLETO</div>
+                      <div id="s2b-price-tag" class="text-[11px] font-extrabold text-brand-green mt-0.5">R$ 19,90</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Ebook info panel -->
+              <div class="flex-1 space-y-5 fade-slide-up max-w-md text-left">
+                <div>
+                  <p class="text-[9px] font-bold text-brand-purple uppercase tracking-widest mb-1">Infoproduto Gerado</p>
+                  <h2 id="s2b-title" class="font-extrabold text-xl text-white leading-tight">Ebook Title</h2>
+                  <p id="s2b-desc" class="text-xs text-zinc-400 mt-2 leading-relaxed">Description...</p>
+                </div>
+
+                <!-- Chapters preview -->
+                <div class="glass border border-brand-border rounded-xl p-4 space-y-2">
+                  <p class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Sumário do Ebook</p>
+                  <div id="s2b-chapters" class="space-y-1.5 text-xs">
+                    <!-- populated via JS -->
+                  </div>
+                </div>
+
+                <!-- Specs row -->
+                <div class="flex gap-3">
+                  <div class="flex-1 glass border border-brand-border rounded-lg p-3 text-center">
+                    <div class="text-brand-green font-extrabold text-base">3</div>
+                    <div class="text-[8px] text-zinc-500 uppercase tracking-wider mt-0.5">Capítulos</div>
+                  </div>
+                  <div class="flex-1 glass border border-brand-border rounded-lg p-3 text-center">
+                    <div class="text-brand-purple font-extrabold text-base">PDF</div>
+                    <div class="text-[8px] text-zinc-500 uppercase tracking-wider mt-0.5">Formato</div>
+                  </div>
+                  <div class="flex-1 glass border border-brand-border rounded-lg p-3 text-center">
+                    <div class="text-white font-extrabold text-base">PLR</div>
+                    <div class="text-[8px] text-zinc-500 uppercase tracking-wider mt-0.5">Licença</div>
+                  </div>
+                  <div class="flex-1 glass border border-brand-border rounded-lg p-3 text-center">
+                    <div id="s2b-price-spec" class="text-brand-green font-extrabold text-sm">R$ 19,90</div>
+                    <div class="text-[8px] text-zinc-500 uppercase tracking-wider mt-0.5">Preço</div>
+                  </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="flex gap-3">
+                  <button onclick="downloadGeneratedEbook()" class="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold text-xs rounded-lg border border-brand-border transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-download text-brand-green"></i> Baixar Ebook (.PDF)
+                  </button>
+                  <button onclick="advanceToStage3()" class="flex-1 py-3 bg-brand-purple hover:bg-brand-purpleDark text-white font-bold text-xs rounded-lg shadow-purpleGlow transition-all flex items-center justify-center gap-2">
+                    Criar LP <i class="fa-solid fa-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STAGE 3: COLOR SELECTION -->
+          <div id="stage-3" class="hidden space-y-6 stage-panel">
+            <h3 class="font-bold text-sm text-white uppercase tracking-wider">Passo 3: Escolha o Tema de Cor da sua Landing Page</h3>
+            <p class="text-xs text-zinc-400 font-medium">Nossa IA aplicará a paleta selecionada em todos os botões, seções e tipografias da Landing Page gerada.</p>
+            
+            <!-- Color Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 select-none">
+              <button onclick="selectColorTheme('purple')" id="color-purple" class="color-theme-card p-4 rounded-lg border border-brand-purple bg-brand-purple/10 flex flex-col items-center justify-center gap-3 transition-all">
+                <div class="w-7 h-7 rounded-full bg-brand-purple shadow-purpleGlow"></div>
+                <span class="text-xs font-bold">Roxo Elétrico</span>
+              </button>
+              
+              <button onclick="selectColorTheme('green')" id="color-green" class="color-theme-card p-4 rounded-lg border border-brand-border bg-white/5 hover:bg-white/10 flex flex-col items-center justify-center gap-3 transition-all">
+                <div class="w-7 h-7 rounded-full bg-brand-green shadow-greenGlow"></div>
+                <span class="text-xs font-bold">Verde Neon</span>
+              </button>
+
+              <button onclick="selectColorTheme('blue')" id="color-blue" class="color-theme-card p-4 rounded-lg border border-brand-border bg-white/5 hover:bg-white/10 flex flex-col items-center justify-center gap-3 transition-all">
+                <div class="w-7 h-7 rounded-full bg-blue-500 shadow"></div>
+                <span class="text-xs font-bold">Azul Royal</span>
+              </button>
+
+              <button onclick="selectColorTheme('red')" id="color-red" class="color-theme-card p-4 rounded-lg border border-brand-border bg-white/5 hover:bg-white/10 flex flex-col items-center justify-center gap-3 transition-all">
+                <div class="w-7 h-7 rounded-full bg-red-500 shadow"></div>
+                <span class="text-xs font-bold">Vermelho Fogo</span>
+              </button>
+
+              <button onclick="selectColorTheme('orange')" id="color-orange" class="color-theme-card p-4 rounded-lg border border-brand-border bg-white/5 hover:bg-white/10 flex flex-col items-center justify-center gap-3 transition-all col-span-2 md:col-span-1">
+                <div class="w-7 h-7 rounded-full bg-orange-500 shadow"></div>
+                <span class="text-xs font-bold">Laranja Sunset</span>
+              </button>
+            </div>
+
+            <div class="pt-6 border-t border-brand-border flex justify-end">
+              <button onclick="advanceToStage4()" class="px-8 py-3.5 bg-brand-purple hover:bg-brand-purpleDark text-white font-bold text-xs rounded-lg shadow-purpleGlow transition-all">
+                Gerar Página de Vendas <i class="fa-solid fa-wand-magic-sparkles ml-1"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- STAGE 4: LP GENERATION -->
+          <div id="stage-4" class="hidden text-center space-y-8 py-10 stage-panel">
+            <div class="relative w-full max-w-lg mx-auto h-48 rounded-2xl border border-brand-purple/20 bg-black/60 overflow-hidden flex flex-col justify-center items-center shadow-purpleGlow p-4">
+              <div class="absolute top-0 left-0 right-0 h-[2px] bg-brand-green shadow-greenGlow animate-scan pointer-events-none"></div>
+              <canvas id="neural-canvas-s4" class="absolute inset-0 opacity-40 pointer-events-none"></canvas>
+              
+              <div class="relative z-10 space-y-3">
+                <div class="flex items-center justify-center gap-2 text-brand-green font-mono text-[9px] bg-brand-green/10 border border-brand-green/20 px-3 py-1 rounded-full uppercase tracking-wider animate-pulse">
+                  <span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-ping"></span> Compilador IA Ativo
+                </div>
+                <h3 class="font-extrabold text-sm text-white tracking-wide">Compilando Landing Page (LP)...</h3>
+                <div class="text-[10px] text-zinc-500 font-medium">Aperte <kbd class="px-1 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono text-[9px]">S</kbd> para acelerar compilação</div>
+              </div>
+            </div>
+
+            <div class="max-w-sm mx-auto space-y-3">
+              <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden p-0.5 border border-white/5">
+                <div id="s4-progress" class="bg-gradient-to-r from-brand-purple to-brand-green h-full w-[0%] transition-all duration-300 shadow-purpleGlow"></div>
+              </div>
+              <div class="flex justify-between text-[9px] font-mono text-zinc-500 uppercase">
+                <span id="s4-percentage">0%</span>
+                <span id="s4-timer">Restam 50s</span>
+              </div>
+            </div>
+
+            <div class="w-full max-w-lg bg-black/60 border border-brand-border rounded-lg p-4 font-mono text-[9px] text-brand-green h-40 overflow-y-auto space-y-1 text-left no-scrollbar mx-auto" id="s4-logs">
+              <!-- Log typewriter dynamic -->
+            </div>
+          </div>
+
+          <!-- STAGE 5: LP VIEWPORT DEMO -->
+          <div id="stage-5" class="hidden space-y-6 stage-panel">
+            <div class="flex justify-between items-center">
+              <h3 class="font-bold text-sm text-white uppercase tracking-wider">Passo 5: Landing Page Gerada com Sucesso</h3>
+              <div class="flex gap-2 select-none">
+                <button onclick="setLpAppView('desktop')" id="lp-app-btn-desktop" class="px-3 py-1.5 rounded bg-brand-purple text-white text-[9px] font-mono font-bold tracking-wider">DESKTOP</button>
+                <button onclick="setLpAppView('mobile')" id="lp-app-btn-mobile" class="px-3 py-1.5 rounded bg-white/5 text-zinc-400 text-[9px] font-mono font-bold tracking-wider hover:text-white transition-colors">MOBILE</button>
+              </div>
+            </div>
+
+            <div class="w-full bg-black/50 border border-brand-border rounded-2xl p-3 flex justify-center">
+              <div id="lp-app-viewport" class="w-full h-80 rounded-xl border border-brand-border bg-[#08090C] overflow-y-auto no-scrollbar shadow-purpleGlow transition-all duration-300">
+                <div id="lp-app-preview-container" class="text-white text-left font-sans">
+                  <!-- compiled dynamically based on color selected -->
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-brand-border flex justify-end">
+              <button onclick="advanceToStage6()" class="px-8 py-3.5 bg-brand-purple hover:bg-brand-purpleDark text-white font-bold text-xs rounded-lg shadow-purpleGlow transition-all">
+                Encontrar Grupos de Tráfego Orgânico <i class="fa-solid fa-users-viewfinder ml-1"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- STAGE 6: TRAFFIC SOURCE SCANNER -->
+          <div id="stage-6" class="hidden text-center space-y-8 py-10 stage-panel">
+            <div class="relative w-full max-w-lg mx-auto h-48 rounded-2xl border border-brand-purple/20 bg-black/60 overflow-hidden flex flex-col justify-center items-center shadow-purpleGlow p-4">
+              <div class="absolute top-0 left-0 right-0 h-[2px] bg-brand-green shadow-greenGlow animate-scan pointer-events-none"></div>
+              <canvas id="neural-canvas-s6" class="absolute inset-0 opacity-40 pointer-events-none"></canvas>
+              
+              <div class="relative z-10 space-y-3">
+                <div class="flex items-center justify-center gap-2 text-brand-green font-mono text-[9px] bg-brand-green/10 border border-brand-green/20 px-3 py-1 rounded-full uppercase tracking-wider animate-pulse">
+                  <span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-ping"></span> Compilador IA Ativo
+                </div>
+                <h3 class="font-extrabold text-sm text-white tracking-wide">Mapeando Tráfego e Grupos de Facebook...</h3>
+                <div class="text-[10px] text-zinc-500 font-medium">Aperte <kbd class="px-1 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono text-[9px]">S</kbd> para acelerar compilação</div>
+              </div>
+            </div>
+
+            <div class="max-w-sm mx-auto space-y-3">
+              <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden p-0.5 border border-white/5">
+                <div id="s6-progress" class="bg-gradient-to-r from-brand-purple to-brand-green h-full w-[0%] transition-all duration-300 shadow-purpleGlow"></div>
+              </div>
+              <div class="flex justify-between text-[9px] font-mono text-zinc-500 uppercase">
+                <span id="s6-percentage">0%</span>
+                <span id="s6-timer">Restam 50s</span>
+              </div>
+            </div>
+
+            <div class="w-full max-w-lg bg-black/60 border border-brand-border rounded-lg p-4 font-mono text-[9px] text-brand-green h-40 overflow-y-auto space-y-1 text-left no-scrollbar mx-auto" id="s6-logs">
+              <!-- Log typewriter dynamic -->
+            </div>
+          </div>
+
+          <!-- STAGE 7: FINAL DELIVERY PANEL -->
+          <div id="stage-7" class="hidden space-y-6 stage-panel text-left">
+            <div class="flex items-center gap-3 bg-brand-green/10 border border-brand-green/20 rounded-xl p-4 mb-2">
+              <i class="fa-solid fa-circle-check text-brand-green text-lg animate-bounce"></i>
+              <div>
+                <h4 class="font-bold text-xs text-white">Tudo Pronto! Sua Estrutura Foi Gerada</h4>
+                <p class="text-[10px] text-zinc-400">Baixe o PDF, confira o link da sua Landing Page e copie os grupos e copies de divulgação abaixo.</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <!-- Col 1: Ebook PLR -->
+              <div class="glass border border-brand-border rounded-xl p-5 flex flex-col justify-between">
+                <div class="space-y-4">
+                  <span class="text-[9px] font-bold text-brand-purple uppercase tracking-widest"><i class="fa-solid fa-file-pdf"></i> Infoproduto</span>
+                  <div id="s7-ebook-cover" class="w-full h-36 rounded-lg p-4 bg-gradient-to-tr from-brand-purple to-brand-purpleDark flex flex-col justify-between select-none border border-white/15 shadow-lg">
+                    <span class="text-[8px] font-bold uppercase tracking-wider bg-black/35 px-2 py-0.5 rounded w-max">PLR Livre</span>
+                    <h4 id="s7-ebook-title" class="font-extrabold text-xs text-white leading-tight uppercase tracking-wide">Ebook Title</h4>
+                  </div>
+                  <p class="text-[10px] text-zinc-400 leading-relaxed font-medium">Ebook completo diagramado em PDF, pronto para entrega instantânea após a compra do cliente.</p>
+                </div>
+                <button onclick="downloadGeneratedEbook()" class="w-full py-3 bg-white/5 hover:bg-white/10 text-white font-bold text-xs rounded-lg border border-brand-border mt-4 transition-all">
+                  <i class="fa-solid fa-download mr-1"></i> Baixar Ebook (.PDF)
+                </button>
+              </div>
+
+              <!-- Col 2: Landing Page Link -->
+              <div class="glass border border-brand-border rounded-xl p-5 flex flex-col justify-between">
+                <div class="space-y-4">
+                  <span class="text-[9px] font-bold text-brand-purple uppercase tracking-widest"><i class="fa-solid fa-window-maximize"></i> Funil</span>
+                  
+                  <div class="p-3 bg-black/40 border border-brand-border rounded-lg space-y-2 select-all">
+                    <div class="text-[9px] font-bold text-brand-greenLight uppercase tracking-wider">URL da sua Landing Page:</div>
+                    <div class="text-xs text-white truncate font-mono font-semibold" id="s7-lp-link-text">https://wizard.ai/lps/...</div>
+                  </div>
+                  <p class="text-[10px] text-zinc-400 leading-relaxed font-medium">Página hospedada localmente e integrada com o link direto de checkout Pix de baixo valor.</p>
+                </div>
+                <button onclick="openExternalLpModal()" class="w-full py-3 bg-brand-purple hover:bg-brand-purpleDark text-white font-bold text-xs rounded-lg mt-4 transition-all">
+                  <i class="fa-solid fa-eye mr-1"></i> Visualizar Landing Page
+                </button>
+              </div>
+
+              <!-- Col 3: Traffic Groups & Copy -->
+              <div class="glass border border-brand-border rounded-xl p-5 flex flex-col justify-between" style="box-shadow: 0 0 30px rgba(16,185,129,0.02);">
+                <div class="space-y-4">
+                  <span class="text-[9px] font-bold text-brand-green uppercase tracking-widest flex items-center gap-1.5">
+                    <i class="fa-solid fa-share-nodes"></i> Canais de Tráfego Segmentados
+                  </span>
+                  
+                  <div class="space-y-2" id="s7-groups-box">
+                    <!-- generated dynamically via Javascript as beautiful clickable buttons -->
+                  </div>
+
+                  <div class="space-y-1.5 relative">
+                    <div class="flex justify-between items-center">
+                      <span class="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Copy de Abordagem Sugerida:</span>
+                      <button onclick="copyOnlyText()" id="s7-copy-btn" class="text-[8px] text-brand-purpleLight font-extrabold hover:text-white flex items-center gap-1 transition-colors uppercase tracking-wider select-none bg-brand-purple/10 border border-brand-purple/20 px-2 py-0.5 rounded">
+                        <i class="fa-solid fa-copy"></i> COPIAR COPY
+                      </button>
+                    </div>
+                    <textarea id="s7-copy-textarea" class="w-full h-24 bg-black/40 border border-brand-border focus:border-brand-purple rounded-lg p-2.5 text-[10px] text-white outline-none resize-none font-sans no-scrollbar leading-relaxed" readonly></textarea>
+                  </div>
+                </div>
+                <button onclick="copyGroupsLinksOnly()" class="w-full py-3 bg-brand-green hover:bg-brand-greenLight text-black font-extrabold text-xs rounded-lg mt-4 transition-all flex items-center justify-center gap-2 shadow-greenGlow">
+                  <i class="fa-solid fa-copy"></i> COPIAR TODOS OS LINKS
+                </button>
+              </div>
+            </div>
+
+            <div class="pt-6 border-t border-brand-border text-center">
+              <button onclick="resetWizard()" class="px-6 py-2.5 rounded-lg border border-brand-border hover:border-brand-borderHover text-zinc-500 hover:text-white transition-all text-xs font-semibold">
+                <i class="fa-solid fa-rotate-left mr-1"></i> Criar Novo Infoproduto
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- INTEGRATIONS -->
+      <!-- ========================================== -->
+      <div id="integrations-tab" class="tab-content space-y-6">
+        <div class="glass border border-brand-border rounded-2xl p-6 md:p-8">
+          <h3 class="font-extrabold text-base mb-2">Integrações de Gateways</h3>
+          <p class="text-xs text-zinc-400 mb-6 font-medium">Conecte sua API de checkout para processar as vendas Pix automaticamente e atualizar o faturamento principal.</p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-5 border border-brand-border bg-white/5 rounded-xl flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-4">
+                <span class="font-bold text-xs uppercase tracking-wider">Kiwify Checkout</span>
+                <span class="w-2 h-2 rounded-full bg-zinc-600"></span>
+              </div>
+              <p class="text-[10px] text-zinc-400 leading-relaxed mb-4 font-medium">Integração simplificada via Webhook. Sincroniza pagamentos aprovados e compras recusadas instantaneamente.</p>
+              <button onclick="openGatewayModal('kiwify')" class="w-full py-2 bg-white/5 text-white border border-brand-border rounded-lg text-xs font-bold hover:bg-white/10 transition-all">Conectar Gateway</button>
+            </div>
+
+            <div class="p-5 border border-brand-border bg-white/5 rounded-xl flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-4">
+                <span class="font-bold text-xs uppercase tracking-wider">Hotmart API</span>
+                <span class="w-2 h-2 rounded-full bg-zinc-600"></span>
+              </div>
+              <p class="text-[10px] text-zinc-400 leading-relaxed mb-4 font-medium">Mapeie suas vendas na maior plataforma de infoprodutos do Brasil com chaves H-Token.</p>
+              <button onclick="openGatewayModal('hotmart')" class="w-full py-2 bg-white/5 text-white border border-brand-border rounded-lg text-xs font-bold hover:bg-white/10 transition-all">Conectar Gateway</button>
+            </div>
+
+            <div class="p-5 border border-brand-border bg-white/5 rounded-xl flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-4">
+                <span class="font-bold text-xs uppercase tracking-wider">PerfectPay Webhook</span>
+                <span class="w-2 h-2 rounded-full bg-zinc-600"></span>
+              </div>
+              <p class="text-[10px] text-zinc-400 leading-relaxed mb-4 font-medium">Configure envio de webhook imediato para as vendas geradas e ative a entrega automática.</p>
+              <button onclick="openGatewayModal('perfectpay')" class="w-full py-2 bg-white/5 text-white border border-brand-border rounded-lg text-xs font-bold hover:bg-white/10 transition-all">Conectar Gateway</button>
+            </div>
+          </div>
+
+          <!-- Webhook Real-time Terminal Log Console -->
+          <div class="mt-8 border border-brand-border bg-black/40 rounded-xl p-5 font-mono">
+            <div class="flex items-center justify-between pb-3 border-b border-brand-border mb-4">
+              <div class="flex items-center gap-2 text-[10px] text-brand-purpleLight font-bold uppercase tracking-wider">
+                <span class="w-1.5 h-1.5 rounded-full bg-brand-purpleLight animate-pulse"></span> Terminal de Logs do Webhook
+              </div>
+              <span class="text-[8px] text-zinc-600 uppercase font-bold select-none font-mono">Status: Monitorando Porta 443</span>
+            </div>
+            <div class="space-y-1.5 text-[9px] text-zinc-400 max-h-36 overflow-y-auto no-scrollbar font-mono leading-relaxed" id="webhook-logs-console">
+              <span class="block text-zinc-500 font-semibold">// [09:00:00] Servidor local de Webhook iniciado...</span>
+              <span class="block text-zinc-500 font-semibold">// [09:00:01] Monitorando endpoint: /api/webhook para recebimento de payloads.</span>
+              <span class="block text-brand-green/70 font-semibold">[INFO] Nenhuma conexão ativa configurada ainda. Vá em "Conectar Gateway" acima para configurar e testar.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ============================================== -->
+  <!-- MODAL: DYNAMIC FULL VIEW LANDING PAGE PREVIEW -->
+  <!-- ============================================== -->
+  <div id="external-lp-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex flex-col">
+    <!-- Header control -->
+    <div class="h-14 border-b border-brand-border bg-[#0B0D15] px-6 flex justify-between items-center shrink-0 select-none">
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-bold text-brand-purpleLight uppercase tracking-wider"><i class="fa-solid fa-window-maximize mr-2"></i> LP Gerada com IA (Modo Visualização)</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse"></span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="setLpExternalView('desktop')" id="ext-btn-desktop" class="w-8 h-8 rounded bg-brand-purple text-white flex items-center justify-center text-xs" title="Modo Desktop">
+          <i class="fa-solid fa-desktop"></i>
+        </button>
+        <button onclick="setLpExternalView('mobile')" id="ext-btn-mobile" class="w-8 h-8 rounded bg-white/5 hover:bg-white/10 text-brand-textGray hover:text-white flex items-center justify-center text-xs" title="Modo Mobile">
+          <i class="fa-solid fa-mobile-screen-button"></i>
+        </button>
+      </div>
+      <button onclick="closeExternalLpModal()" class="w-8 h-8 rounded bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <!-- Inner viewport frame container -->
+    <div class="flex-1 w-full bg-black/50 flex justify-center items-start overflow-hidden p-4">
+      <div id="ext-lp-viewport" class="w-full h-full max-w-7xl rounded-xl border border-brand-border bg-[#08090C] overflow-y-auto no-scrollbar shadow-purpleGlow transition-all duration-300">
+        <div id="ext-lp-preview-container" class="text-white text-left font-sans">
+          <!-- rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Sound Synthesizer Script -->
+  <script>
+    function playKiwifyChime(ctx) {
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(830, ctx.currentTime);
+      gain1.gain.setValueAtTime(0.04, ctx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(1046, ctx.currentTime + 0.08);
+      gain2.gain.setValueAtTime(0.06, ctx.currentTime + 0.08);
+      gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+      
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      
+      osc1.start();
+      osc1.stop(ctx.currentTime + 0.35);
+      osc2.start(ctx.currentTime + 0.08);
+      osc2.stop(ctx.currentTime + 0.5);
+    }
+
+    function playChime() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        playKiwifyChime(ctx);
+      } catch (e) {
+        console.log("Audio contexts require user interaction gesture.");
+      }
+    }
+  </script>
+
+  <!-- Script Core: Products & Flow -->
+  <script>
+    const productsData = {
+      saude: {
+        niche: "Saúde & Bem-Estar",
+        subniche: "Zero Glúten",
+        product: "Protocolo Vida Sem Glúten",
+        price: "R$ 37,90",
+        nicheImage: "images/saude.png",
+        description: "Aprenda a eliminar o glúten de forma simples e melhore sua digestão e energia em 21 dias.",
+        icon: "fa-solid fa-heart-pulse",
+        headline: "Como Eliminar o Glúten da Sua Rotina e Ter o Corpo e Energia dos Seus Sonhos em 21 Dias Sem Passar Fome",
+        lpTitle: "Vida Sem Glúten",
+        benefits: [
+          "Cardápios práticos sem glúten estruturados dia a dia.",
+          "Lista de substituições fáceis para pães e massas.",
+          "Como recuperar sua energia intestinal em tempo recorde."
+        ],
+        facebookGroups: [
+          "https://www.facebook.com/groups/1117821838367210",
+          "https://www.facebook.com/groups/3028682224057463",
+          "https://www.facebook.com/groups/emagrecer.ts",
+          "https://www.facebook.com/groups/778137249511645",
+          "https://www.facebook.com/groups/EmagrecimentoSaudavelOficial",
+          "https://www.facebook.com/groups/968914634866857",
+          "https://www.facebook.com/groups/receitasrapidasefaceisofc",
+          "https://www.facebook.com/groups/1831066137194441",
+          "https://www.facebook.com/groups/931093970292248",
+          "https://www.facebook.com/groups/773754752999130",
+          "https://www.facebook.com/groups/569233760223495",
+          "https://www.facebook.com/groups/1916432448582805",
+          "https://www.facebook.com/groups/987714808394861",
+          "https://www.facebook.com/groups/333540224054917",
+          "https://www.facebook.com/groups/344756539844632"
+        ],
+        whatsappGroups: [
+          "https://chat.whatsapp.com/JifDL3G3ZLYFXQ8T7hO4TQ",
+          "https://chat.whatsapp.com/KyvPW2yQPRb8UgWsvmaLyB",
+          "https://chat.whatsapp.com/HHYdiUHuWBP6ViZZOBCwCp",
+          "https://chat.whatsapp.com/DaEqWSS3GRd9MysSglQKQX",
+          "https://chat.whatsapp.com/JLWez4nTOfhFcVx55fhwrf",
+          "https://chat.whatsapp.com/GviSGQL3RK73ARbd0TGqqE",
+          "https://chat.whatsapp.com/DTll8Q4xwSwE0a1iAhiv7y",
+          "https://chat.whatsapp.com/JPRWruEgdsD6Ebk6qUd2YW",
+          "https://chat.whatsapp.com/ILnri7UiSHE4o3K85JbtGZ",
+          "https://chat.whatsapp.com/FCEwfuiwccfG56i4WhlvaM",
+          "https://chat.whatsapp.com/C4qZ2EE8PWPIfO6ahNCEZy",
+          "https://chat.whatsapp.com/GKm25iySj8N536IaILHfQ1",
+          "https://chat.whatsapp.com/BXTQcUMpQZoGoNE2xDRu8p",
+          "https://chat.whatsapp.com/KOCjiyk7NrREjGCpCnb7WU"
+        ],
+        copyOutreach: "opa, tudo bem? se você sofre com refluxo, inchaço ou cansaço constante e quer aprender como eliminar o glúten da sua vida sem passar fome, eu montei esse protocolo prático de 21 dias. Dá uma olhada no link oficial: [LINK_DA_LP]"
+      },
+      financas: {
+        niche: "Finanças & Crypto",
+        subniche: "Milhas Aéreas",
+        product: "Método Milhas Ocultas",
+        price: "R$ 27,90",
+        nicheImage: "images/financas.png",
+        description: "Transforme todos os seus gastos cotidianos em passagens de classe executiva e renda extra.",
+        icon: "fa-solid fa-piggy-bank",
+        headline: "A Oportunidade Oculta: Transforme Suas Despesas Diárias em Passagens Aéreas de Graça e R$ 2.000 Extra por Mês",
+        lpTitle: "Milhas Ocultas",
+        benefits: [
+          "Como acumular milhas multiplicadas sem gastar mais.",
+          "O segredo para conseguir cartões Black sem anuidade.",
+          "Tática secreta para vender milhas no melhor preço do mercado."
+        ],
+        facebookGroups: [
+          "https://www.facebook.com/groups/eduacacaofinanceira.sarmento",
+          "https://www.facebook.com/groups/finan",
+          "https://www.facebook.com/groups/2317271158346080",
+          "https://www.facebook.com/groups/758989894863981",
+          "https://www.facebook.com/groups/195422263919304",
+          "https://www.facebook.com/groups/criptomoedasbrasil.io",
+          "https://www.facebook.com/groups/1413269138915803"
+        ],
+        whatsappGroups: [
+          "https://chat.whatsapp.com/DAK57jWyZAxK59RwwDqNJH",
+          "https://chat.whatsapp.com/DTaDmFNLKYv6z8O4nlaCEf",
+          "https://chat.whatsapp.com/JenoRW0cz9o21eJjGethKS",
+          "https://chat.whatsapp.com/IYzNzYPfaiNLKYl3e7N86g",
+          "https://chat.whatsapp.com/GysyHDkylo31qISOWuQ17q",
+          "https://chat.whatsapp.com/FxOq7YmOsiF1GLAxWBuawN",
+          "https://chat.whatsapp.com/DPzY9CXsR2xJjwxss8ODRz",
+          "https://chat.whatsapp.com/E7YlznY1R7906hGcrbvuFM",
+          "https://chat.whatsapp.com/GrVIurtZLcL56g3FDv1Vp2",
+          "https://chat.whatsapp.com/HHYdiUHuWBP6ViZZOBCwCp",
+          "https://chat.whatsapp.com/HJyWvWWFWnu0rfam1nHuCm",
+          "https://chat.whatsapp.com/LHlJu5aey4HDFupmKv4i8O",
+          "https://chat.whatsapp.com/EDhU1ymJ3i73hmeGo8XRPS",
+          "https://chat.whatsapp.com/Cb5gGhqOOuSF0nF4itugC2",
+          "https://chat.whatsapp.com/GAqM2GHdwJL9OThXrKqpMw",
+          "https://chat.whatsapp.com/I7z7xp7Kh84JaIEj4BorS9",
+          "https://chat.whatsapp.com/IFeyrLG4SamEf7Xsa0Gb7x",
+          "https://chat.whatsapp.com/FcoeE7U1Ert9Dq4xsUKhl5",
+          "https://chat.whatsapp.com/ErOU19DZxTU8CNWLX5Ckyn",
+          "https://chat.whatsapp.com/En9uPWUSqYH1eBceCZCEud",
+          "https://chat.whatsapp.com/Jpv3RiJQUmtCEQnhcll6gS"
+        ],
+        copyOutreach: "Fala pessoal, beleza? Quem aqui quer viajar de graça e fazer uma renda extra de R$ 2.000 por mês apenas acumulando pontos no cartão de crédito? Montei esse método passo a passo detalhando como fazer isso hoje mesmo. Link: [LINK_DA_LP]"
+      },
+      relacionamentos: {
+        niche: "Relacionamentos",
+        subniche: "Inteligência Social",
+        product: "Protocolo Atração Magnética",
+        price: "R$ 47,90",
+        nicheImage: "images/relacionamentos.png",
+        description: "Descubra o protocolo prático de atração interpessoal e inteligência social focada em conexões rápidas.",
+        icon: "fa-solid fa-heart",
+        headline: "O Protocolo de Inteligência Social que Torna Você Altamente Atraente e Respeitado em Qualquer Ambiente Social",
+        lpTitle: "Atração Magnética",
+        benefits: [
+          "Linguagem corporal alpha para gerar conexões instantâneas.",
+          "Técnicas de conversação para nunca mais travar ou ficar sem assunto.",
+          "Gatilhos de psicologia social validados pela ciência."
+        ],
+        facebookGroups: [
+          "https://www.facebook.com/groups/1814208275553376",
+          "https://www.facebook.com/groups/2283108528509611",
+          "https://www.facebook.com/groups/441523826913932",
+          "https://www.facebook.com/groups/5897062967026249",
+          "https://www.facebook.com/groups/908376665952021",
+          "https://www.facebook.com/groups/299905133812920",
+          "https://www.facebook.com/groups/834346368758740",
+          "https://www.facebook.com/groups/883916049758929",
+          "https://www.facebook.com/groups/306676292354858",
+          "https://www.facebook.com/groups/255149528534809",
+          "https://www.facebook.com/groups/1549853308614436",
+          "https://www.facebook.com/groups/1534483153440576"
+        ],
+        whatsappGroups: [
+          "https://chat.whatsapp.com/BDmM0NyoaemEcEYB9wgoVY",
+          "https://chat.whatsapp.com/CGx7rE68hJz7rYbfiVjFTU",
+          "https://chat.whatsapp.com/EcxdtEhdypf3Hm9LByOrR6",
+          "https://chat.whatsapp.com/CDVvXykWHIcHyVmFKrvfxf",
+          "https://chat.whatsapp.com/7sdwPTpAn4fAoq1zQU6UyX",
+          "https://chat.whatsapp.com/HpAt83Gyrl357YMGVFQEWm",
+          "https://chat.whatsapp.com/Lt3NdeYJlzQ3lA4RE04zL0",
+          "https://chat.whatsapp.com/HH7CIilu5Hb7Yq3EWaGUtt",
+          "https://chat.whatsapp.com/B59YD54BMfQIfYZq3tGEYK",
+          "https://chat.whatsapp.com/Ib2EnuyjFW7G2H5Ib1prFg",
+          "https://chat.whatsapp.com/JOCJV5LxpIyCJvlWJz3NIg",
+          "https://chat.whatsapp.com/F8OH1HYNZRf5wFGgKVBlNi",
+          "https://chat.whatsapp.com/Cqggj5hUhEa2ShvmpYoPrF",
+          "https://chat.whatsapp.com/GnrTKHZMHBpLsQ80In7itc",
+          "https://chat.whatsapp.com/HGBIfKKlcSv7fKWFcLVh4n"
+        ],
+        copyOutreach: "Fala galera! Se você quer aprender a se comunicação de forma mais assertiva, vencer a timidez e se tornar uma pessoa mais magnética e respeitada nos ambientes sociais, dá uma olhada nesse manual rápido de inteligência social. Link: [LINK_DA_LP]"
+      },
+      negocios: {
+        niche: "Negócios Digitais",
+        subniche: "Vendedor Oculto",
+        product: "Método Vendedor Oculto",
+        price: "R$ 27,90",
+        nicheImage: "images/negocios.png",
+        description: "Monetize na internet criando estruturas de vendas automáticas sem expor sua imagem ou rosto.",
+        icon: "fa-solid fa-laptop-code",
+        headline: "Monte seu Primeiro Canal de Vendas que Roda no Piloto Automático Sem Precisar Mostrar o Rosto na Internet",
+        lpTitle: "Vendedor Oculto",
+        benefits: [
+          "Estrutura completa de funil de vendas sem aparecer.",
+          "Modelos de copys prontos focados em produtos low-ticket.",
+          "Configuração de postagem em massa com ferramentas gratuitas."
+        ],
+        facebookGroups: [
+          "https://www.facebook.com/groups/519213362795584",
+          "https://www.facebook.com/groups/1609559992670125",
+          "https://www.facebook.com/groups/403198411088667",
+          "https://www.facebook.com/groups/346880573385017",
+          "https://www.facebook.com/groups/185641878221182",
+          "https://www.facebook.com/groups/1518267698183681",
+          "https://www.facebook.com/groups/vocemeb",
+          "https://www.facebook.com/groups/Empreendedores.e.Comerciantes",
+          "https://www.facebook.com/groups/Empreendedor.Insights",
+          "https://www.facebook.com/groups/guacu"
+        ],
+        whatsappGroups: [
+          "https://chat.whatsapp.com/DJSmqLnd3FD7vQVAnXBK9t",
+          "https://chat.whatsapp.com/CWJDkRJbe5M9GaXAjtprYN",
+          "https://chat.whatsapp.com/GjtN4CaAMuq8tNKiJnwVW6",
+          "https://chat.whatsapp.com/Gy1gNORZ6Fn9uNJvITrzGe",
+          "https://chat.whatsapp.com/JeedRXrC007CzcXpVAzmKz",
+          "https://chat.whatsapp.com/IsItuHEKH8E9w6SPn54HNi",
+          "https://chat.whatsapp.com/CH7u4fBc5Y60ujsR4bszEK",
+          "https://chat.whatsapp.com/HfZ1WvM1updDPbus9o8DBb",
+          "https://chat.whatsapp.com/FOIlamALtf29W38yoau4cP",
+          "https://chat.whatsapp.com/DHHKytZZzgBHJoT8QAnC2O",
+          "https://chat.whatsapp.com/LK4xzwW8YStFk1PPmCXXmi",
+          "https://chat.whatsapp.com/K48qFHlCB360ipWk5vEkSV",
+          "https://chat.whatsapp.com/DrQAelvVKK0C1vAmNMNc0w"
+        ],
+        copyOutreach: "Fala pessoal! Quer começar a vender na internet mas tem vergonha de aparecer ou criar conteúdo com seu rosto? Montei esse guia mostrando como eu criei canais ocultos que vendem no piloto automático todos os dias. Acesso aqui: [LINK_DA_LP]"
+      },
+      pets: {
+        niche: "Pets & Adestramento",
+        subniche: "Cão Obediente",
+        product: "Manual Cão Obediente",
+        price: "R$ 19,90",
+        nicheImage: "images/pets.png",
+        description: "Adestre seu cão em casa em até 15 dias usando técnicas de reforço positivo totalmente explicadas.",
+        icon: "fa-solid fa-dog",
+        headline: "Como Fazer Seu Cão Te Obedecer de Primeira e Parar de Latir ou Destruir a Casa em Apenas 15 Dias",
+        lpTitle: "Cão Obediente",
+        benefits: [
+          "Adestramento sem violência usando reforço positivo.",
+          "Como eliminar latidos excessivos e xixi no lugar errado.",
+          "Comandos básicos (sentar, deitar, vir) em 3 lições rápidas."
+        ],
+        facebookGroups: [
+          "https://www.facebook.com/groups/646207699372927",
+          "https://www.facebook.com/groups/216165843510693",
+          "https://www.facebook.com/groups/1076927740388554",
+          "https://www.facebook.com/groups/385123742117027",
+          "https://www.facebook.com/groups/583873775107556",
+          "https://www.facebook.com/groups/408898802649785"
+        ],
+        whatsappGroups: [
+          "https://chat.whatsapp.com/DMAtQZSM59cBr3eX9HHQqx",
+          "https://chat.whatsapp.com/BzIYDHXmMiBCV6digpajAp",
+          "https://chat.whatsapp.com/IUqhhjxm8Me1B16t5ZOvKa",
+          "https://chat.whatsapp.com/I32It2xkEDiHtq2VSki6a7",
+          "https://chat.whatsapp.com/BervW3mySvf6DiysJMjsTA",
+          "https://chat.whatsapp.com/DPT1FINcXxD0re3VDlYUVk",
+          "https://chat.whatsapp.com/HHYdiUHuWBP6ViZZOBCwCp",
+          "https://chat.whatsapp.com/DA2Kh3cU886HI5A1CMWWKW",
+          "https://chat.whatsapp.com/G2AAZ6VqsnJ6SO1yplYcfF",
+          "https://chat.whatsapp.com/DRD57TLQU4KIUKEVDYYNDp",
+          "https://chat.whatsapp.com/D1I2RKKx9BaFJDjzhHB52c"
+        ],
+        copyOutreach: "Olá pessoal! Se o seu cachorro late muito, faz xixi no lugar errado ou destrói tudo em casa, dá uma olhada nesse manual rápido de adestramento por reforço positivo. Funcionou muito bem com o meu cão e resolve em 15 dias. Link: [LINK_DA_LP]"
+      },
+      espiritualidade: {
+        niche: "Espiritualidade",
+        subniche: "Lei da Atração",
+        product: "Manifestação Acelerada",
+        price: "R$ 67,90",
+        nicheImage: "images/espiritualidade.png",
+        description: "Aprenda a reprogramar seu subconsciente e atraia prosperidade material e espiritual.",
+        icon: "fa-solid fa-wand-sparkles",
+        headline: "A Fórmula Secreta de Reprogramação Mental para Desbloquear Fluxo de Caixa e Prosperidade em 7 Dias",
+        lpTitle: "Manifestação Acelerada",
+        benefits: [
+          "Como desobstruir crenças limitantes sobre prosperidade financeira.",
+          "O exercício diário de 5 minutos para manifestação acelerada.",
+          "Como alinhar sua frequência vibracional com seus maiores objetivos."
+        ],
+        facebookGroups: [
+          "https://www.facebook.com/groups/2206133456264225",
+          "https://www.facebook.com/groups/216046951815886",
+          "https://www.facebook.com/groups/1050606672452551",
+          "https://www.facebook.com/groups/869288866499975",
+          "https://www.facebook.com/groups/ociclodasrespostas",
+          "https://www.facebook.com/groups/306898888437827",
+          "https://www.facebook.com/groups/portaldoespiritualismo",
+          "https://www.facebook.com/groups/477821810140794",
+          "https://www.facebook.com/groups/891944516035242",
+          "https://www.facebook.com/groups/1423887924337138",
+          "https://www.facebook.com/groups/386296638161513"
+        ],
+        whatsappGroups: [
+          "https://chat.whatsapp.com/LdBs6KYHmeb5vy3Pq6BJws",
+          "https://chat.whatsapp.com/DkDnxyZpRw91t0VXdrTkmZ",
+          "https://chat.whatsapp.com/IIVjtTwpXlFK7f32zJJnJq",
+          "https://chat.whatsapp.com/FUVdrwt3Upt20PlQzxVtzs",
+          "https://chat.whatsapp.com/FjsZ6Bl7oPGGU0KGmVs2BO",
+          "https://chat.whatsapp.com/EGbN8iz8zCi8b1aXjHoyyx",
+          "https://chat.whatsapp.com/JkfGNBsMAgZDWMRBknGi3s",
+          "https://chat.whatsapp.com/CjKYpPQvW7u5CM4MdDXTXE",
+          "https://chat.whatsapp.com/J520YXCX3EqHiM2TMkcrnp",
+          "https://chat.whatsapp.com/HHYdiUHuWBP6ViZZOBCwCp",
+          "https://chat.whatsapp.com/KaPS7uM53Cc4JGthQGQwtt",
+          "https://chat.whatsapp.com/C6SINf6W4zGAV4klx2rqN8",
+          "https://chat.whatsapp.com/JaB48kZOAZ83Vq7L2Wbqtm",
+          "https://chat.whatsapp.com/LqDA6wECd437EY75Y3MP8g",
+          "https://chat.whatsapp.com/LRNnPYbr8Fz238wwkcoSTK",
+          "https://chat.whatsapp.com/KVsjsRbf8BQ6ZWdxMUc7Se",
+          "https://chat.whatsapp.com/IzsxTk3lLRT46t5ftAQK2j",
+          "https://chat.whatsapp.com/J0HfnbbEUCi3jpDWZe2pTx",
+          "https://chat.whatsapp.com/ISdq7hQf1la7q9LBMF5GYq",
+          "https://chat.whatsapp.com/K5ANvcxxGvh6iPHjAbdXL2"
+        ],
+        copyOutreach: "Gratidão pessoal! Para quem quer destravar a mente subconsciente, se alinhar com a frequência da prosperidade e aplicar exercícios práticos de manifestação acelerada em 7 dias, confira esse guia rápido. Link: [LINK_DA_LP]"
+      }
+    };
+
+    const themeColorStyles = {
+      purple: {
+        text: "text-purple-400", bg: "bg-purple-600 hover:bg-purple-700", border: "border-purple-500",
+        gradient: "from-purple-500 to-indigo-950", glow: "shadow-purpleGlow"
+      },
+      green: {
+        text: "text-emerald-400", bg: "bg-emerald-600 hover:bg-emerald-700", border: "border-emerald-500",
+        gradient: "from-emerald-500 to-teal-950", glow: "shadow-greenGlow"
+      },
+      blue: {
+        text: "text-blue-400", bg: "bg-blue-600 hover:bg-blue-700", border: "border-blue-500",
+        gradient: "from-blue-500 to-indigo-950", glow: "shadow-blue-500/15"
+      },
+      red: {
+        text: "text-red-400", bg: "bg-red-600 hover:bg-red-700", border: "border-red-500",
+        gradient: "from-red-500 to-rose-950", glow: "shadow-red-500/15"
+      },
+      orange: {
+        text: "text-orange-400", bg: "bg-orange-600 hover:bg-orange-700", border: "border-orange-500",
+        gradient: "from-orange-500 to-amber-900", glow: "shadow-orange-500/15"
+      }
+    };
+
+    let selectedNiche = '';
+    let selectedColor = 'purple';
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-textGray hover:text-white hover:bg-white/5 transition-all text-xs text-left tab-btn";
+      });
+      btn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-brand-purple/10 border border-brand-purple/20 text-white font-medium text-xs shadow-purpleGlow transition-all tab-btn";
+    }
+
+    function selectNiche(nicheKey) {
+      selectedNiche = nicheKey;
+      
+      document.querySelectorAll('.n-card').forEach(c => {
+        c.className = "n-card p-5 rounded-xl border border-brand-border bg-white/5 hover:border-brand-purple/40 hover:bg-brand-purple/5 text-center flex flex-col items-center justify-center gap-3 transition-all duration-300 group";
+      });
+      document.getElementById(`n-card-${nicheKey}`).className = "n-card p-5 rounded-xl border-2 border-brand-purple bg-brand-purple/10 text-center flex flex-col items-center justify-center gap-3 transition-all duration-300 group shadow-purpleGlow";
+
+      const data = productsData[nicheKey];
+      const select = document.getElementById('niche-product-select');
+      select.innerHTML = `<option value="${nicheKey}" class="bg-[#0B0D15]">${data.subniche} - Ebook "${data.product}"</option>`;
+
+      document.getElementById('subniche-box').classList.remove('hidden');
+      document.getElementById('subniche-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function downloadGeneratedEbook() {
+      const ebookFiles = {
+        saude: "ebooks/saúde e bem estar/protocolo 0 glúten/Module1-Ebook/GlutenFreeLifestyle.pdf",
+        financas: "ebooks/finanças e crypto/milhas áreas.pdf",
+        relacionamentos: "ebooks/relacionamentos/atração.PDF",
+        negocios: "ebooks/negócios/vendas.pdf",
+        espiritualidade: "ebooks/espiritualidade/limpeza energética/Mantendo a Espiritualidade.pdf",
+        pets: "ebooks/negócios/plr master.pdf"
+      };
+
+      let filePath = ebookFiles[selectedNiche] || ebookFiles.negocios;
+      let fileName = "Ebook-Wizard-Pro.pdf";
+
+      const currentProduct = (productsData[selectedNiche] && productsData[selectedNiche].product || "").toLowerCase();
+      const currentDescription = (productsData[selectedNiche] && productsData[selectedNiche].description || "").toLowerCase();
+      
+      if (selectedNiche === 'espiritualidade') {
+        if (currentProduct.includes('astro') || currentProduct.includes('signo') || currentProduct.includes('mapa') ||
+            currentDescription.includes('astro') || currentDescription.includes('signo') || currentDescription.includes('mapa')) {
+          filePath = "ebooks/astrologia/Princípios e práticas de astrologia/eBook/Astrology Principles And Practices.pdf";
+          fileName = "Principios-e-Praticas-de-Astrologia.pdf";
+        } else {
+          filePath = "ebooks/espiritualidade/limpeza energética/Mantendo a Espiritualidade.pdf";
+          fileName = "Mantendo-a-Espiritualidade.pdf";
+        }
+      } else if (selectedNiche === 'saude') {
+        fileName = "Estilo-de-vida-sem-Gluten.pdf";
+      } else if (selectedNiche === 'financas') {
+        fileName = "Metodo-Milhas-Ocultas.pdf";
+      } else if (selectedNiche === 'relacionamentos') {
+        fileName = "Protocolo-Atracao-Magnetica.pdf";
+      } else if (selectedNiche === 'negocios') {
+        fileName = "Metodo-Vendedor-Oculto.pdf";
+      } else if (selectedNiche === 'pets') {
+        fileName = "PLR-Master-Guia-Completo.pdf";
+      }
+
+      const link = document.createElement('a');
+      link.href = filePath;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      playChime();
+    }
+
+    function advanceToStage2() {
+      // Save selected custom price
+      const selectedPriceVal = document.getElementById('niche-price-select').value;
+      const formattedPrice = "R$ " + parseFloat(selectedPriceVal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      productsData[selectedNiche].price = formattedPrice;
+
+      document.getElementById('stage-1').classList.add('hidden');
+      document.getElementById('stage-2').classList.remove('hidden');
+      updateStepIndicators(2);
+
+      const progress = document.getElementById('s2-progress');
+      const pct = document.getElementById('s2-percentage');
+      const timer = document.getElementById('s2-timer');
+      const logs = document.getElementById('s2-logs');
+
+      progress.style.width = '0%';
+      pct.innerText = '0%';
+      timer.innerText = 'Restam 50s';
+      logs.innerHTML = '';
+
+      let timeElapsed = 0;
+      const duration = 50;
+
+      const ebookLogs = [
+        { time: 1000, msg: "<span class='text-brand-purple'>[WIZARD CORE]</span> Inicializando compilador de Ebooks..." },
+        { time: 4000, msg: "<span class='text-brand-purple'>[WIZARD CORE]</span> Carregando modelo estrutural de infoproduto..." },
+        { time: 9000, msg: `<span class='text-brand-purple'>[WIZARD IA]</span> Analisando tópicos de alta conversão para o nicho <b>${productsData[selectedNiche].niche}</b>...` },
+        { time: 14000, msg: "<span class='text-brand-purple'>[WIZARD IA]</span> Escrevendo sumário e divisões de capítulos..." },
+        { time: 20000, msg: `<span class='text-brand-purple'>[WIZARD IA]</span> Escrevendo Capítulo 1: Fundamentos do subnicho <b>${productsData[selectedNiche].subniche}</b>...` },
+        { time: 27000, msg: "<span class='text-brand-purple'>[WIZARD IA]</span> Escrevendo Capítulo 2: Estratégias Práticas e Planilha de Apoio..." },
+        { time: 34000, msg: "<span class='text-brand-purple'>[WIZARD IA]</span> Escrevendo Capítulo 3: Erros Frequentes e Hacks Ocultos..." },
+        { time: 41000, msg: "<span class='text-brand-purple'>[WIZARD IA]</span> Compilando conteúdo escrito em português nativo..." },
+        { time: 45000, msg: "<span class='text-brand-green'>[SISTEMA]</span> Diagramando arquivo final em formato PDF..." },
+        { time: 48000, msg: "<span class='text-brand-green'>[SISTEMA]</span> Renderizando mockup tridimensional de capa..." },
+        { time: 50000, msg: "<span class='text-brand-green'>[SISTEMA]</span> Ebook diagramado com sucesso!" }
+      ];
+
+      ebookLogs.forEach(l => {
+        setTimeout(() => {
+          if (document.getElementById('stage-2').classList.contains('hidden')) return;
+          const p = document.createElement('div');
+          p.innerHTML = `> ${l.msg}`;
+          logs.appendChild(p);
+          logs.scrollTop = logs.scrollHeight;
+        }, l.time);
+      });
+
+      runStageTimer(duration, (elapsed, percentage) => {
+        progress.style.width = `${percentage}%`;
+        pct.innerText = `${percentage}%`;
+        timer.innerText = `Restam ${duration - elapsed}s`;
+      }, () => {
+        setTimeout(() => {
+          advanceToStage2B();
+        }, 600);
+      });
+
+      startNeuralNodes('neural-canvas-s2');
+    }
+
+    function advanceToStage2B() {
+      const data = productsData[selectedNiche];
+
+      document.getElementById('s2b-book-title').innerText = data.product;
+      document.getElementById('s2b-title').innerText = data.product;
+      document.getElementById('s2b-desc').innerText = data.description;
+      document.getElementById('s2b-price-tag').innerText = data.price;
+      document.getElementById('s2b-price-spec').innerText = data.price;
+      document.getElementById('s2b-icon').className = `${data.icon} text-white/50 text-xs`;
+
+      const chapterSets = {
+        saude: ["Entendendo a Intolerância ao Glúten", "Alimentos Proibidos e Substitutos", "Cardápio Semanal Prático"],
+        financas: ["Como Funciona o Sistema de Milhas", "Cartões e Estratégias de Acúmulo", "Resgates e Monetização Oculta"],
+        relacionamentos: ["Os Fundamentos da Inteligência Social", "Comunicação Não-Verbal e Carisma", "Como Criar Conexões Genuínas"],
+        negocios: ["O Modelo do Vendedor Oculto", "Estrutura de Funil Sem Aparecer", "Postagem em Massa e Automação"],
+        pets: ["Psicologia Canina Básica", "Os 5 Comandos Essenciais em 3 Dias", "Como Eliminar Maus Hábitos"],
+        espiritualidade: ["Reprogramação do Subconsciente", "O Exercício Diário de 5 Minutos", "Alinhamento Vibracional e Prosperidade"]
+      };
+
+      const chapters = chapterSets[selectedNiche] || ["Capítulo 1", "Capítulo 2", "Capítulo 3"];
+      const chapterContainer = document.getElementById('s2b-chapters');
+      chapterContainer.innerHTML = chapters.map((ch, i) => `
+        <div class="flex items-center gap-2.5 text-zinc-300">
+          <span class="w-5 h-5 rounded-full bg-brand-purple/20 border border-brand-purple/30 flex items-center justify-center text-[8px] font-bold text-brand-purpleLight shrink-0">${i + 1}</span>
+          <span class="text-[11px] font-medium">${ch}</span>
+        </div>
+      `).join('');
+
+      const coverColors = {
+        saude:          'linear-gradient(145deg, #059669 0%, #064e3b 60%, #022c22 100%)',
+        financas:       'linear-gradient(145deg, #d97706 0%, #78350f 60%, #1c0d00 100%)',
+        relacionamentos:'linear-gradient(145deg, #dc2626 0%, #7f1d1d 60%, #200000 100%)',
+        negocios:       'linear-gradient(145deg, #7c3aed 0%, #4c1d95 60%, #1e1040 100%)',
+        pets:           'linear-gradient(145deg, #ea580c 0%, #7c2d12 60%, #1c0a00 100%)',
+        espiritualidade:'linear-gradient(145deg, #4f46e5 0%, #312e81 60%, #0d0c2b 100%)'
+      };
+      document.querySelector('.book-front').style.background = coverColors[selectedNiche] || coverColors.negocios;
+
+      document.getElementById('stage-2').classList.add('hidden');
+      document.getElementById('stage-2b').classList.remove('hidden');
+      updateStepIndicators(2);
+
+      const book = document.getElementById('s2b-book');
+      book.classList.remove('animate-in');
+      void book.offsetWidth;
+      book.classList.add('animate-in');
+    }
+
+    function advanceToStage3() {
+      document.getElementById('stage-2b').classList.add('hidden');
+      document.getElementById('stage-3').classList.remove('hidden');
+      updateStepIndicators(3);
+    }
+
+    function selectColorTheme(colorKey) {
+      selectedColor = colorKey;
+      document.querySelectorAll('.color-theme-card').forEach(btn => {
+        btn.className = "color-theme-card p-4 rounded-lg border border-brand-border bg-white/5 hover:bg-white/10 flex flex-col items-center justify-center gap-3 transition-all";
+      });
+      document.getElementById(`color-${colorKey}`).className = `color-theme-card p-4 rounded-lg border-2 border-brand-purple bg-brand-purple/10 flex flex-col items-center justify-center gap-3 transition-all shadow-purpleGlow`;
+    }
+
+    function advanceToStage4() {
+      document.getElementById('stage-3').classList.add('hidden');
+      document.getElementById('stage-4').classList.remove('hidden');
+      updateStepIndicators(4);
+
+      const progress = document.getElementById('s4-progress');
+      const pct = document.getElementById('s4-percentage');
+      const timer = document.getElementById('s4-timer');
+      const logs = document.getElementById('s4-logs');
+
+      progress.style.width = '0%';
+      pct.innerText = '0%';
+      timer.innerText = 'Restam 50s';
+      logs.innerHTML = '';
+
+      let timeElapsed = 0;
+      const duration = 50;
+
+      const lpLogs = [
+        { time: 1000, msg: "<span class='text-brand-purple'>[WIZARD CORE]</span> Carregando gerador de templates estáticos..." },
+        { time: 5000, msg: "<span class='text-brand-purple'>[WIZARD CORE]</span> Inicializando compilador de estilos CSS..." },
+        { time: 10000, msg: "<span class='text-brand-purple'>[WIZARD IA]</span> Estruturando cabeçalho e rodapé responsivos..." },
+        { time: 16000, msg: `<span class='text-brand-purple'>[WIZARD IA]</span> Injetando headlines e textos de copy de alta conversão para <b>${productsData[selectedNiche].product}</b>...` },
+        { time: 24000, msg: `<span class='text-brand-purple'>[WIZARD IA]</span> Aplicando paleta de cores: <b>${selectedColor.toUpperCase()}</b> nos botões e elementos...` },
+        { time: 32000, msg: "<span class='text-brand-purple'>[WIZARD IA]</span> Escrevendo seção de benefícios e faq dinâmicos..." },
+        { time: 39000, msg: `<span class='text-brand-green'>[SISTEMA]</span> Vinculando checkout Pix de baixo valor no preço de <b>${productsData[selectedNiche].price}</b>...` },
+        { time: 44000, msg: "<span class='text-brand-green'>[SISTEMA]</span> Otimizando tags SEO e velocidade de carregamento local..." },
+        { time: 50000, msg: "<span class='text-brand-green'>[SISTEMA]</span> Landing Page compilada com sucesso!" }
+      ];
+
+      lpLogs.forEach(l => {
+        setTimeout(() => {
+          if (document.getElementById('stage-4').classList.contains('hidden')) return;
+          const p = document.createElement('div');
+          p.innerHTML = `> ${l.msg}`;
+          logs.appendChild(p);
+          logs.scrollTop = logs.scrollHeight;
+        }, l.time);
+      });
+
+      runStageTimer(duration, (elapsed, percentage) => {
+        progress.style.width = `${percentage}%`;
+        pct.innerText = `${percentage}%`;
+        timer.innerText = `Restam ${duration - elapsed}s`;
+      }, () => {
+        setTimeout(() => {
+          advanceToStage5();
+        }, 600);
+      });
+
+      startNeuralNodes('neural-canvas-s4');
+    }
+
+    function advanceToStage5() {
+      document.getElementById('stage-4').classList.add('hidden');
+      document.getElementById('stage-5').classList.remove('hidden');
+      updateStepIndicators(5);
+
+      buildLpPreviewHTML('lp-app-preview-container', selectedColor, productsData[selectedNiche]);
+    }
+
+    function setLpAppView(mode) {
+      const viewport = document.getElementById('lp-app-viewport');
+      const deskBtn = document.getElementById('lp-app-btn-desktop');
+      const mobBtn = document.getElementById('lp-app-btn-mobile');
+
+      if (mode === 'desktop') {
+        viewport.className = "w-full h-80 rounded-xl border border-brand-border bg-[#08090C] overflow-y-auto no-scrollbar shadow-purpleGlow transition-all duration-300";
+        deskBtn.className = "px-3 py-1.5 rounded bg-brand-purple text-white text-[9px] font-mono font-bold tracking-wider";
+        mobBtn.className = "px-3 py-1.5 rounded bg-white/5 text-zinc-400 text-[9px] font-mono font-bold tracking-wider hover:text-white transition-colors";
+      } else {
+        viewport.className = "w-[260px] h-80 rounded-2xl border-4 border-brand-border bg-[#08090C] overflow-y-auto no-scrollbar shadow-purpleGlow transition-all duration-300 my-auto mx-auto";
+        mobBtn.className = "px-3 py-1.5 rounded bg-brand-purple text-white text-[9px] font-mono font-bold tracking-wider";
+        deskBtn.className = "px-3 py-1.5 rounded bg-white/5 text-zinc-400 text-[9px] font-mono font-bold tracking-wider hover:text-white transition-colors";
+      }
+    }
+
+    function advanceToStage6() {
+      document.getElementById('stage-5').classList.add('hidden');
+      document.getElementById('stage-6').classList.remove('hidden');
+      updateStepIndicators(6);
+
+      const progress = document.getElementById('s6-progress');
+      const pct = document.getElementById('s6-percentage');
+      const timer = document.getElementById('s6-timer');
+      const logs = document.getElementById('s6-logs');
+
+      progress.style.width = '0%';
+      pct.innerText = '0%';
+      timer.innerText = 'Restam 50s';
+      logs.innerHTML = '';
+
+      let timeElapsed = 0;
+      const duration = 50;
+
+      const scraperLogs = [
+        { time: 1000, msg: "<span class='text-brand-purple'>[WIZARD CORE]</span> Inicializando varredor de comunidades orgânicas..." },
+        { time: 4000, msg: "<span class='text-brand-purple'>[WIZARD CORE]</span> Conectando com banco de dados de grupos ativos..." },
+        { time: 9000, msg: `<span class='text-brand-purple'>[TRAFEGO]</span> Varrendo grupos de Facebook ativos para o nicho <b>${productsData[selectedNiche].niche}</b>...` },
+        { time: 15000, msg: `<span class='text-brand-purple'>[TRAFEGO]</span> Encontrados ${productsData[selectedNiche].facebookGroups.length} grupos de Facebook segmentados.` },
+        { time: 22000, msg: `<span class='text-brand-purple'>[TRAFEGO]</span> Filtrando grupos ativos e livres de aprovação rígida...` },
+        { time: 30000, msg: "<span class='text-brand-purple'>[TRAFEGO]</span> Iniciando varredura de comunidades e grupos de WhatsApp..." },
+        { time: 38000, msg: `<span class='text-brand-green'>[TRAFEGO]</span> Mapeados ${productsData[selectedNiche].whatsappGroups.length} grupos de WhatsApp relacionados.` },
+        { time: 43000, msg: "<span class='text-brand-green'>[IA]</span> Redigindo copywriting de alta conversão estruturada para abordagem orgânica..." },
+        { time: 47000, msg: "<span class='text-brand-green'>[SISTEMA]</span> Consolidando links de destino e copies finais..." },
+        { time: 50000, msg: "<span class='text-brand-green'>[SISTEMA]</span> Tráfego e copies gerados com sucesso!" }
+      ];
+
+      scraperLogs.forEach(l => {
+        setTimeout(() => {
+          if (document.getElementById('stage-6').classList.contains('hidden')) return;
+          const p = document.createElement('div');
+          p.innerHTML = `> ${l.msg}`;
+          logs.appendChild(p);
+          logs.scrollTop = logs.scrollHeight;
+        }, l.time);
+      });
+
+      runStageTimer(duration, (elapsed, percentage) => {
+        progress.style.width = `${percentage}%`;
+        pct.innerText = `${percentage}%`;
+        timer.innerText = `Restam ${duration - elapsed}s`;
+      }, () => {
+        setTimeout(() => {
+          advanceToStage7();
+        }, 600);
+      });
+
+      startNeuralNodes('neural-canvas-s6');
+    }
+
+    function advanceToStage7() {
+      document.getElementById('stage-6').classList.add('hidden');
+      document.getElementById('stage-7').classList.remove('hidden');
+      updateStepIndicators(7);
+
+      // Update dashboard active structures count
+      const structuresCountEl = document.getElementById('structures-count');
+      const structuresProgressEl = document.getElementById('structures-progress');
+      const performanceStatusEl = document.getElementById('performance-status-bar');
+      if (structuresCountEl && structuresProgressEl) {
+        structuresCountEl.innerText = "1 / 10";
+        structuresProgressEl.style.width = "10%";
+        if (performanceStatusEl) {
+          performanceStatusEl.innerHTML = `<span>INTEGRAÇÃO OPERACIONAL</span><span class="text-brand-green font-bold">1 ATIVA</span>`;
+        }
+      }
+
+      const data = productsData[selectedNiche];
+
+      document.getElementById('s7-ebook-title').innerText = data.product;
+      const ebookStyle = themeColorStyles[selectedColor];
+      const cover = document.getElementById('s7-ebook-cover');
+      cover.className = `w-full h-36 rounded-lg p-4 bg-gradient-to-tr ${ebookStyle.gradient} flex flex-col justify-between select-none border border-white/15 shadow-lg`;
+
+      const keyName = data.product.toLowerCase().replace(/ /g, "_");
+      document.getElementById('s7-lp-link-text').innerText = `https://wizard.ai/lps/${keyName}_284`;
+
+      // Groups mapping (Facebook + Whatsapp) - RENDERED AS BATCHED SEGMENTED LIST
+      const groupsBox = document.getElementById('s7-groups-box');
+      
+      const initialFb = data.facebookGroups.slice(0, 2);
+      const remainingFb = data.facebookGroups.slice(2);
+      
+      const initialWa = data.whatsappGroups.slice(0, 2);
+      const remainingWa = data.whatsappGroups.slice(2);
+      
+      let htmlContent = `
+        <div class="text-[9px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Comunidades de Facebook e WhatsApp Mapeadas:</div>
+        <div class="space-y-2 select-none">
+      `;
+      
+      // Render initial Facebook
+      initialFb.forEach((g, idx) => {
+        htmlContent += `
+          <a href="${g}" target="_blank" class="flex items-center justify-between p-2.5 rounded-xl bg-blue-600/10 border border-blue-500/20 hover:bg-blue-600/20 hover:border-blue-500/40 hover:shadow-md transition-all text-[10px] font-bold text-blue-400 tracking-wide">
+            <span class="flex items-center gap-2">
+              <i class="fab fa-facebook text-[12px]"></i>
+              <span>Facebook Grupo #${idx + 1}</span>
+            </span>
+            <span class="flex items-center gap-1 text-[8px] bg-blue-500/20 px-2 py-0.5 rounded text-blue-300 font-mono">
+              ABRIR <i class="fa-solid fa-up-right-from-square"></i>
+            </span>
+          </a>
+        `;
+      });
+      
+      // Render initial Whatsapp
+      initialWa.forEach((w, idx) => {
+        htmlContent += `
+          <a href="${w}" target="_blank" class="flex items-center justify-between p-2.5 rounded-xl bg-emerald-600/10 border border-emerald-500/20 hover:bg-emerald-600/20 hover:border-emerald-500/40 hover:shadow-md transition-all text-[10px] font-bold text-emerald-400 tracking-wide">
+            <span class="flex items-center gap-2">
+              <i class="fab fa-whatsapp text-[12px]"></i>
+              <span>WhatsApp Grupo #${idx + 1}</span>
+            </span>
+            <span class="flex items-center gap-1 text-[8px] bg-emerald-500/20 px-2 py-0.5 rounded text-emerald-300 font-mono">
+              ABRIR <i class="fa-solid fa-up-right-from-square"></i>
+            </span>
+          </a>
+        `;
+      });
+      
+      htmlContent += `</div>`; // Close initial list
+      
+      // Add the "Encontrar Mais" button and loading indicator
+      htmlContent += `
+        <button id="s7-btn-encontrar-mais" onclick="encontrarMaisGrupos()" class="w-full mt-3 py-2.5 bg-brand-purple hover:bg-brand-purpleDark text-white font-extrabold text-[10px] rounded-lg shadow-purpleGlow hover:shadow-purpleGlowStrong transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider animate-pulse-slow">
+          <i class="fa-solid fa-satellite-dish text-[11px] animate-pulse"></i> Encontrar Mais Comunidades ✦
+        </button>
+        
+        <div id="s7-groups-loading" class="hidden flex flex-col items-center justify-center py-4 text-center space-y-2 bg-black/30 border border-brand-border rounded-xl mt-3">
+          <i class="fa-solid fa-spinner animate-spin text-brand-purple text-lg"></i>
+          <span class="text-[9px] font-mono text-zinc-500 uppercase tracking-widest animate-pulse">Varrendo redes em busca de novos grupos...</span>
+        </div>
+        
+        <div id="s7-groups-more" class="hidden space-y-2 mt-3 max-h-[145px] overflow-y-auto pr-1 no-scrollbar select-none fade-slide-up">
+      `;
+      
+      // Render remaining Facebook
+      remainingFb.forEach((g, idx) => {
+        htmlContent += `
+          <a href="${g}" target="_blank" class="flex items-center justify-between p-2.5 rounded-xl bg-blue-600/10 border border-blue-500/20 hover:bg-blue-600/20 hover:border-blue-500/40 hover:shadow-md transition-all text-[10px] font-bold text-blue-400 tracking-wide">
+            <span class="flex items-center gap-2">
+              <i class="fab fa-facebook text-[12px]"></i>
+              <span>Facebook Grupo #${idx + 3}</span>
+            </span>
+            <span class="flex items-center gap-1 text-[8px] bg-blue-500/20 px-2 py-0.5 rounded text-blue-300 font-mono">
+              ABRIR <i class="fa-solid fa-up-right-from-square"></i>
+            </span>
+          </a>
+        `;
+      });
+      
+      // Render remaining Whatsapp
+      remainingWa.forEach((w, idx) => {
+        htmlContent += `
+          <a href="${w}" target="_blank" class="flex items-center justify-between p-2.5 rounded-xl bg-emerald-600/10 border border-emerald-500/20 hover:bg-emerald-600/20 hover:border-emerald-500/40 hover:shadow-md transition-all text-[10px] font-bold text-emerald-400 tracking-wide">
+            <span class="flex items-center gap-2">
+              <i class="fab fa-whatsapp text-[12px]"></i>
+              <span>WhatsApp Grupo #${idx + 3}</span>
+            </span>
+            <span class="flex items-center gap-1 text-[8px] bg-emerald-500/20 px-2 py-0.5 rounded text-emerald-300 font-mono">
+              ABRIR <i class="fa-solid fa-up-right-from-square"></i>
+            </span>
+          </a>
+        `;
+      });
+      
+      htmlContent += `</div>`; // Close remaining list
+      
+      groupsBox.innerHTML = htmlContent;
+
+      const copyVal = data.copyOutreach.replace("[LINK_DA_LP]", `https://wizard.ai/lps/${keyName}_284`);
+      document.getElementById('s7-copy-textarea').value = copyVal;
+
+      buildLpPreviewHTML('ext-lp-preview-container', selectedColor, data);
+    }
+
+    function encontrarMaisGrupos() {
+      const btn = document.getElementById('s7-btn-encontrar-mais');
+      const loading = document.getElementById('s7-groups-loading');
+      const more = document.getElementById('s7-groups-more');
+      
+      if (btn) btn.classList.add('hidden');
+      if (loading) loading.classList.remove('hidden');
+      
+      setTimeout(() => {
+        if (loading) loading.classList.add('hidden');
+        if (more) {
+          more.classList.remove('hidden');
+          more.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 1500);
+    }
+
+    function resetWizard() {
+      document.getElementById('stage-7').classList.add('hidden');
+      document.getElementById('stage-1').classList.remove('hidden');
+      updateStepIndicators(1);
+
+      document.querySelectorAll('.n-card').forEach(c => {
+        c.className = "n-card p-5 rounded-xl border border-brand-border bg-white/5 hover:border-brand-purple/40 hover:bg-brand-purple/5 text-center flex flex-col items-center justify-center gap-3 transition-all duration-300 group";
+      });
+      document.getElementById('subniche-box').classList.add('hidden');
+      selectedNiche = '';
+    }
+
+    function copyOnlyText() {
+      const copyText = document.getElementById('s7-copy-textarea').value;
+      navigator.clipboard.writeText(copyText).then(() => {
+        showCopyFeedback();
+      }).catch(() => {
+        const t = document.createElement("textarea");
+        t.value = copyText;
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand("copy");
+        document.body.removeChild(t);
+        showCopyFeedback();
+      });
+    }
+
+    function showCopyFeedback() {
+      const btn = document.getElementById('s7-copy-btn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<i class="fa-solid fa-check text-brand-green"></i> COPIADO!`;
+      btn.className = "text-[8px] text-brand-green font-extrabold flex items-center gap-1 transition-colors uppercase tracking-wider bg-brand-green/10 border border-brand-green/20 px-2 py-0.5 rounded";
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.className = "text-[8px] text-brand-purpleLight font-extrabold hover:text-white flex items-center gap-1 transition-colors uppercase tracking-wider select-none bg-brand-purple/10 border border-brand-purple/20 px-2 py-0.5 rounded";
+      }, 2000);
+    }
+
+    function copyGroupsLinksOnly() {
+      const data = productsData[selectedNiche];
+      const lpLink = document.getElementById('s7-lp-link-text').innerText;
+      const allLinksText = `Links de Divulgação:\n${data.facebookGroups.join('\n')}\n${data.whatsappGroups.join('\n')}\n\nLanding Page Link:\n${lpLink}`;
+
+      navigator.clipboard.writeText(allLinksText).then(() => {
+        alert("Todos os links de grupos copiados com sucesso!");
+      }).catch(() => {
+        const t = document.createElement("textarea");
+        t.value = allLinksText;
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand("copy");
+        document.body.removeChild(t);
+        alert("Todos os links de grupos copiados com sucesso (fallback)!");
+      });
+    }
+
+    function openExternalLpModal() {
+      document.getElementById('external-lp-modal').classList.remove('hidden');
+    }
+
+    function closeExternalLpModal() {
+      document.getElementById('external-lp-modal').classList.add('hidden');
+    }
+
+    function setLpExternalView(mode) {
+      const viewport = document.getElementById('ext-lp-viewport');
+      const deskBtn = document.getElementById('ext-btn-desktop');
+      const mobBtn = document.getElementById('ext-btn-mobile');
+
+      if (mode === 'desktop') {
+        viewport.className = "w-full h-full max-w-7xl rounded-xl border border-brand-border bg-[#08090C] overflow-y-auto no-scrollbar shadow-purpleGlow transition-all duration-300";
+        deskBtn.className = "w-8 h-8 rounded bg-brand-purple text-white flex items-center justify-center text-xs";
+        mobBtn.className = "w-8 h-8 rounded bg-white/5 hover:bg-white/10 text-brand-textGray hover:text-white flex items-center justify-center text-xs";
+      } else {
+        viewport.className = "w-[375px] h-full rounded-3xl border-8 border-brand-border bg-[#08090C] overflow-y-auto no-scrollbar shadow-purpleGlow transition-all duration-300 my-auto mx-auto";
+        mobBtn.className = "w-8 h-8 rounded bg-brand-purple text-white flex items-center justify-center text-xs";
+        deskBtn.className = "w-8 h-8 rounded bg-white/5 hover:bg-white/10 text-brand-textGray hover:text-white flex items-center justify-center text-xs";
+      }
+    }
+
+    function updateStepIndicators(stepNum) {
+      const indicators = document.getElementById('wizard-indicators').children;
+      for (let i = 0; i < indicators.length; i++) {
+        indicators[i].className = "px-2.5 py-1 rounded bg-white/5 text-zinc-500";
+      }
+      const activeInd = document.getElementById(`ind-${stepNum}`);
+      activeInd.className = `px-2.5 py-1 rounded bg-brand-purple/20 text-brand-purpleLight border border-brand-purple/30 animate-pulse`;
+    }
+
+    function buildLpPreviewHTML(containerId, colorKey, data) {
+      const container = document.getElementById(containerId);
+      const style = themeColorStyles[colorKey];
+
+      let benefitHTML = "";
+      data.benefits.forEach(b => {
+        benefitHTML += `
+          <li class="flex items-start gap-2.5">
+            <span class="w-4 h-4 rounded-full bg-brand-green/20 text-brand-greenLight flex items-center justify-center text-[10px] mt-0.5"><i class="fa-solid fa-check"></i></span>
+            <span class="text-[11px] text-brand-textGray">${b}</span>
+          </li>
+        `;
+      });
+
+      container.innerHTML = `
+        <header class="py-3 px-4 border-b border-brand-border bg-black/40 flex justify-between items-center select-none">
+          <div class="flex items-center gap-2">
+            <div class="w-5 h-5 rounded bg-brand-purple flex items-center justify-center text-[10px] text-white">
+              <i class="${data.icon}"></i>
+            </div>
+            <span class="font-extrabold text-[10px] uppercase tracking-wider">${data.lpTitle}</span>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-brand-green/10 text-brand-green text-[8px] font-bold uppercase">Pix Imediato</span>
+        </header>
+
+        <div class="p-6 text-center max-w-xl mx-auto space-y-4">
+          <span class="text-[8px] font-bold text-white uppercase bg-white/5 px-2.5 py-1 rounded-full tracking-wider border border-white/10">
+            Acesso Digital Liberado
+          </span>
+          <h2 class="font-black text-lg md:text-xl leading-tight">
+            ${data.headline}
+          </h2>
+          <p class="text-[11px] text-brand-textGray">
+            ${data.description}
+          </p>
+
+          <!-- Stunning generated Niche Visual Cover -->
+          <div class="my-4 rounded-xl overflow-hidden border border-white/10 relative h-32 w-full bg-cover bg-center shadow-lg" style="background-image: url('${data.nicheImage}')">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex items-end p-3">
+              <span class="text-[8px] font-black tracking-widest uppercase text-brand-green bg-black/40 px-2 py-0.5 rounded border border-brand-green/20">Conteúdo Exclusivo IA ✦</span>
+            </div>
+          </div>
+
+          <div class="py-4 flex justify-center select-none">
+            <div class="w-28 h-36 rounded-xl bg-gradient-to-tr ${style.gradient} p-3 flex flex-col justify-between shadow-2xl relative border border-white/10">
+              <span class="text-[7px] text-white/50 uppercase tracking-widest text-left font-bold">Ebook Premium</span>
+              <div class="text-left">
+                <h4 class="font-black text-[9px] text-white uppercase leading-tight line-clamp-3">${data.product}</h4>
+                <div class="w-5 h-0.5 bg-brand-green mt-1"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass border border-brand-border rounded-xl p-4 max-w-xs mx-auto space-y-3 shadow-md select-none">
+            <div class="text-[10px] text-brand-textGray line-through -mb-1.5">De R$ 97,90</div>
+            <div class="flex justify-center items-center gap-0.5">
+              <span class="text-[10px] text-brand-textGray align-super font-semibold">Por apenas R$</span>
+              <span class="text-2xl font-black text-brand-green font-outfit">${data.price.replace("R$ ", "")}</span>
+            </div>
+            
+            <a href="#" onclick="alert('Checkout Pix integrado!'); return false;" class="block w-full py-2.5 ${style.bg} text-white font-extrabold text-[10px] rounded-lg text-center transition-all uppercase tracking-wide">
+              Adquirir no Pix Agora
+            </a>
+          </div>
+        </div>
+
+        <div class="p-6 border-t border-brand-border bg-black/20">
+          <h4 class="font-bold text-xs text-white mb-4 text-center">Garantias e Benefícios do Guia</h4>
+          <ul class="space-y-2.5 max-w-md mx-auto">
+            ${benefitHTML}
+          </ul>
+        </div>
+
+        <footer class="py-4 border-t border-brand-border bg-black/40 text-center text-[8px] text-brand-textGray select-none">
+          &copy; 2026 ${data.product}. Direitos reservados.
+        </footer>
+      `;
+    }
+
+    function startNeuralNodes(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w = canvas.width = canvas.offsetWidth;
+      let h = canvas.height = canvas.offsetHeight;
+      
+      const nodes = Array.from({ length: 15 }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: (Math.random() - 0.5) * 0.8,
+        r: 1.5 + Math.random() * 2
+      }));
+      
+      let active = true;
+      function animate() {
+        if (!active) return;
+        if (!document.getElementById(canvasId) || document.getElementById(canvasId).offsetParent === null) {
+          requestAnimationFrame(animate);
+          return;
+        }
+        ctx.clearRect(0, 0, w, h);
+        
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const dx = nodes[i].x - nodes[j].x;
+            const dy = nodes[i].y - nodes[j].y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < 80) {
+              ctx.beginPath();
+              ctx.moveTo(nodes[i].x, nodes[i].y);
+              ctx.lineTo(nodes[j].x, nodes[j].y);
+              ctx.strokeStyle = `rgba(139, 92, 246, ${0.15 * (1 - dist/80)})`;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
+        }
+        
+        nodes.forEach(n => {
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          ctx.fillStyle = '#10B981';
+          ctx.fill();
+          
+          n.x += n.vx;
+          n.y += n.vy;
+          
+          if (n.x < 0 || n.x > w) n.vx *= -1;
+          if (n.y < 0 || n.y > h) n.vy *= -1;
+        });
+        
+        requestAnimationFrame(animate);
+      }
+      animate();
+    }
+
+    let activeTimer = {
+      interval: null,
+      timeElapsed: 0,
+      duration: 50,
+      onTick: null,
+      onComplete: null
+    };
+
+    function runStageTimer(duration, onTick, onComplete) {
+      if (activeTimer.interval) clearInterval(activeTimer.interval);
+      
+      activeTimer.timeElapsed = 0;
+      activeTimer.duration = duration;
+      activeTimer.onTick = () => {
+        const percentage = Math.floor((activeTimer.timeElapsed / activeTimer.duration) * 100);
+        onTick(activeTimer.timeElapsed, percentage);
+      };
+      activeTimer.onComplete = onComplete;
+      
+      activeTimer.onTick();
+      
+      activeTimer.interval = setInterval(() => {
+        activeTimer.timeElapsed++;
+        activeTimer.onTick();
+        
+        if (activeTimer.timeElapsed >= activeTimer.duration) {
+          clearInterval(activeTimer.interval);
+          activeTimer.interval = null;
+          if (activeTimer.onComplete) activeTimer.onComplete();
+        }
+      }, 1000);
+    }
+
+    function accelerateStageTimer() {
+      if (activeTimer.interval) {
+        activeTimer.timeElapsed = Math.min(activeTimer.timeElapsed + 10, activeTimer.duration);
+        if (activeTimer.onTick) activeTimer.onTick();
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      const key = e.key.toUpperCase();
+      
+      if (key === 'S' || e.key === 'ArrowRight') {
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+        accelerateStageTimer();
+      }
+    });
+
+    function initParticles() {
+      const canvas = document.getElementById('particle-canvas');
+      const ctx = canvas.getContext('2d');
+      let W = canvas.width = window.innerWidth;
+      let H = canvas.height = window.innerHeight;
+      window.addEventListener('resize', () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; });
+
+      const particles = Array.from({ length: 55 }, () => ({
+        x: Math.random() * W, y: Math.random() * H,
+        r: 0.8 + Math.random() * 1.8,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: -0.1 - Math.random() * 0.25,
+        alpha: 0.1 + Math.random() * 0.45,
+        color: Math.random() > 0.45 ? '139,92,246' : '16,185,129'
+      }));
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${p.color},${p.alpha})`;
+          ctx.fill();
+          p.x += p.vx; p.y += p.vy;
+          if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; }
+          if (p.x < -5) p.x = W + 5;
+          if (p.x > W + 5) p.x = -5;
+        });
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < 110) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(139,92,246,${0.04 * (1 - dist/110)})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initParticles();
+      updateGatewayCards();
+    });
+  </script>
+
+  <!-- ============================================== -->
+  <!-- MODAL: GATEWAY INTEGRATION CONFIGURATION -->
+  <!-- ============================================== -->
+  <div id="gateway-modal" class="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass border border-brand-border w-full max-w-xl rounded-2xl p-6 md:p-8 space-y-6 relative overflow-hidden animate-scaleUp">
+      <div class="absolute -right-16 -top-16 w-36 h-36 rounded-full bg-brand-purple/10 blur-2xl"></div>
+      
+      <!-- Close button -->
+      <button onclick="closeGatewayModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white transition-all text-sm">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="flex items-center gap-3 pb-4 border-b border-brand-border">
+        <div class="w-10 h-10 rounded-xl bg-brand-purple/10 border border-brand-purple/20 flex items-center justify-center text-brand-purpleLight text-sm shadow-purpleGlow" id="modal-gateway-icon">
+          <i class="fa-solid fa-circle-nodes"></i>
+        </div>
+        <div>
+          <h3 class="font-extrabold text-base text-white" id="modal-gateway-title">Configurar Integração</h3>
+          <span class="block text-[8px] text-brand-purpleLight font-bold tracking-widest uppercase mt-0.5" id="modal-gateway-subtitle">Kiwify Checkout Webhook</span>
+        </div>
+      </div>
+
+      <!-- Steps Guide (Passo a Passo) -->
+      <div class="space-y-4 text-xs font-medium text-zinc-300">
+        <div>
+          <h4 class="font-bold text-[10px] text-zinc-400 uppercase tracking-wider mb-2">Instruções de Configuração (Passo a Passo)</h4>
+          <div class="bg-black/30 border border-brand-border rounded-xl p-4 text-[10px] leading-relaxed text-zinc-400 font-medium space-y-2.5 max-h-48 overflow-y-auto no-scrollbar font-sans" id="modal-gateway-steps">
+            <!-- Dynamic steps load here -->
+          </div>
+        </div>
+
+        <!-- Webhook URL Field -->
+        <div class="space-y-2">
+          <label class="block text-[9px] font-bold text-zinc-500 uppercase tracking-widest">URL de Produção do Webhook</label>
+          <div class="flex gap-2">
+            <input type="text" readonly id="modal-webhook-url" class="flex-1 bg-black/40 border border-brand-border rounded-lg px-3 py-2 text-[10px] font-mono text-zinc-300 focus:outline-none select-all" value="">
+            <button onclick="copyWebhookUrl()" class="px-3 bg-brand-purple/20 text-brand-purpleLight hover:bg-brand-purple/30 border border-brand-purple/30 rounded-lg text-[10px] font-bold transition-all shrink-0" id="copy-webhook-btn">
+              <i class="fa-regular fa-copy mr-1"></i> Copiar
+            </button>
+          </div>
+        </div>
+
+        <!-- Token/Secret Field -->
+        <div class="space-y-2">
+          <label class="block text-[9px] font-bold text-zinc-500 uppercase tracking-widest" id="modal-token-label">Chave Secreta de Integração / Token</label>
+          <input type="password" id="modal-gateway-token" class="w-full bg-black/40 border border-brand-border rounded-lg px-3 py-2 text-[10px] font-mono text-white placeholder-zinc-600 focus:outline-none focus:border-brand-purple/50" placeholder="Insira o token ou H-Token para validação...">
+        </div>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="pt-4 border-t border-brand-border flex flex-col sm:flex-row gap-3">
+        <button onclick="saveGatewayIntegration()" class="flex-1 py-2.5 bg-gradient-to-r from-brand-purple to-brand-purpleLight text-white rounded-lg text-xs font-bold shadow-purpleGlow transition-all duration-300 flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Salvar e Ativar Integração
+        </button>
+        <button onclick="testGatewaySimulation()" class="px-4 py-2.5 bg-brand-green/20 hover:bg-brand-green/30 text-brand-greenLight border border-brand-green/30 rounded-lg text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1.5 shrink-0" id="test-simulation-btn">
+          <i class="fa-solid fa-vial"></i> Testar Webhook (Simular Pix)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gateway Simulation Style Sheet -->
+  <style>
+    @keyframes coinFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+    .animate-coinFall {
+      animation: coinFall 2s ease-in forwards;
+    }
+    @keyframes slideUp {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slideUp {
+      animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes scaleUp {
+      0% { opacity: 0; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .animate-scaleUp {
+      animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes slideIn {
+      0% { opacity: 0; transform: translateX(50px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+    .animate-slideIn {
+      animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+
+  <!-- Gateway Controller Logic -->
+  <script>
+    let activeGateway = null;
+    let simulatedSalesCount = 0;
+    let accumulatedFaturamento = 0;
+
+    const gatewayConfig = {
+      kiwify: {
+        name: "Kiwify Checkout",
+        icon: '<i class="fa-solid fa-bolt text-brand-purple"></i>',
+        color: "bg-brand-purple",
+        steps: `
+          1. Acesse o seu painel da **Kiwify**.<br>
+          2. Vá em **Aplicativos** (no menu lateral) e depois clique em **Webhooks**.<br>
+          3. Clique no botão roxo **"Criar Webhook"**.<br>
+          4. No campo **URL do Webhook**, cole o endereço seguro copiado abaixo.<br>
+          5. Habilite o evento **"Venda Aprovada"** (Pix e Cartão).<br>
+          6. Escolha o seu produto ou selecione todos, e clique em **Salvar**.
+        `,
+        tokenLabel: "Chave Secreta do Webhook Kiwify (Secret Key)",
+        placeholder: "Insira a chave secreta gerada pela Kiwify..."
+      },
+      hotmart: {
+        name: "Hotmart API",
+        icon: '<i class="fa-solid fa-fire text-orange-500"></i>',
+        color: "bg-orange-500",
+        steps: `
+          1. Acesse o seu painel da **Hotmart**.<br>
+          2. No menu lateral, acesse **Ferramentas** > **Webhooks** (ou acesse Hotmart Developers).<br>
+          3. Clique em **Cadastrar Webhook** (ou Criar Configuração).<br>
+          4. Cole a **URL de Envio** copiada abaixo.<br>
+          5. Selecione o evento de envio para **"Compra Aprovada"**.<br>
+          6. Salve a configuração e copie o **H-Token** gerado no campo de token abaixo.
+        `,
+        tokenLabel: "Token de Autenticação Hotmart (H-Token)",
+        placeholder: "Cole o H-Token fornecido na aba de Credenciais..."
+      },
+      perfectpay: {
+        name: "PerfectPay Webhook",
+        icon: '<i class="fa-solid fa-circle-nodes text-emerald-400"></i>',
+        color: "bg-emerald-400",
+        steps: `
+          1. Acesse o painel da **PerfectPay**.<br>
+          2. Vá em **Ferramentas** > **Webhooks** no menu principal.<br>
+          3. Clique em **Novo Webhook** e cole a **URL do Webhook** copiada abaixo.<br>
+          4. Ative os disparos para **"Venda Aprovada (Pix / Cartão)"**.<br>
+          5. Salve as configurações no painel e digite a chave de integração abaixo.
+        `,
+        tokenLabel: "Chave de API PerfectPay",
+        placeholder: "Insira a chave secreta ou ID do webhook PerfectPay..."
+      }
+    };
+
+    function openGatewayModal(platform) {
+      activeGateway = platform;
+      const config = gatewayConfig[platform];
+      if (!config) return;
+      
+      document.getElementById('modal-gateway-title').innerText = `Integração de Webhook`;
+      document.getElementById('modal-gateway-subtitle').innerText = config.name;
+      document.getElementById('modal-gateway-icon').innerHTML = config.icon;
+      document.getElementById('modal-gateway-steps').innerHTML = config.steps;
+      document.getElementById('modal-token-label').innerText = config.tokenLabel;
+      document.getElementById('modal-gateway-token').placeholder = config.placeholder;
+      
+      // Auto generate webhook URL based on current host
+      const host = window.location.origin;
+      document.getElementById('modal-webhook-url').value = `${host}/api/webhook?gateway=${platform}`;
+      
+      // Load saved token if exists
+      const savedToken = localStorage.getItem(`gateway_token_${platform}`) || '';
+      document.getElementById('modal-gateway-token').value = savedToken;
+
+      document.getElementById('gateway-modal').classList.remove('hidden');
+    }
+
+    function closeGatewayModal() {
+      document.getElementById('gateway-modal').classList.add('hidden');
+    }
+
+    function copyWebhookUrl() {
+      const input = document.getElementById('modal-webhook-url');
+      input.select();
+      navigator.clipboard.writeText(input.value);
+      
+      const btn = document.getElementById('copy-webhook-btn');
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = `<i class="fa-solid fa-check mr-1 text-brand-green animate-bounce"></i> Copiado!`;
+      setTimeout(() => { btn.innerHTML = originalHtml; }, 2000);
+    }
+
+    function saveGatewayIntegration() {
+      const token = document.getElementById('modal-gateway-token').value.trim();
+      if (!token) {
+        alert("Por favor, insira o token ou chave secreta para realizar a validação de segurança.");
+        return;
+      }
+      
+      localStorage.setItem(`gateway_token_${activeGateway}`, token);
+      localStorage.setItem(`gateway_connected_${activeGateway}`, "true");
+      
+      updateGatewayCards();
+      closeGatewayModal();
+      
+      playChime();
+      showActionToast(`Integração com ${gatewayConfig[activeGateway].name} ativada!`);
+      appendWebhookLog(`[INFO] Conexão com ${gatewayConfig[activeGateway].name} autenticada via Token.`, 'text-brand-green');
+      appendWebhookLog(`[INFO] Monitorando tráfego de checkout de forma nativa.`, 'text-zinc-500');
+    }
+
+    function testGatewaySimulation() {
+      let token = document.getElementById('modal-gateway-token').value.trim();
+      if (!token) {
+        token = "simulated_token_123";
+        localStorage.setItem(`gateway_token_${activeGateway}`, token);
+      }
+      localStorage.setItem(`gateway_connected_${activeGateway}`, "true");
+      updateGatewayCards();
+      
+      closeGatewayModal();
+      
+      // Switch tab
+      const dashBtn = document.querySelector('button[onclick*="dashboard-tab"]');
+      if (dashBtn) {
+        switchTab('dashboard-tab', dashBtn);
+      }
+      
+      simulateWebhookSale();
+    }
+
+    function updateGatewayCards() {
+      Object.keys(gatewayConfig).forEach(platform => {
+        const isConnected = localStorage.getItem(`gateway_connected_${platform}`) === "true";
+        const cardContainer = document.querySelector(`button[onclick*="${platform}"]`)?.parentElement;
+        if (!cardContainer) return;
+        
+        const dot = cardContainer.querySelector('.rounded-full');
+        const btn = cardContainer.querySelector('button');
+        
+        if (isConnected) {
+          if (dot) {
+            dot.className = "w-2 h-2 rounded-full bg-brand-green animate-pulse";
+          }
+          if (btn) {
+            btn.className = "w-full py-2 bg-brand-purple/20 text-brand-purpleLight border border-brand-purple/30 rounded-lg text-xs font-bold hover:bg-brand-purple/30 transition-all";
+            btn.innerHTML = `Conectado <i class="fa-solid fa-circle-check ml-1 text-brand-green animate-pulse"></i>`;
+          }
+        } else {
+          if (dot) {
+            dot.className = "w-2 h-2 rounded-full bg-zinc-600";
+          }
+          if (btn) {
+            btn.className = "w-full py-2 bg-white/5 text-white border border-brand-border rounded-lg text-xs font-bold hover:bg-white/10 transition-all";
+            btn.innerHTML = `Conectar Gateway`;
+          }
+        }
+      });
+    }
+
+    function appendWebhookLog(msg, colorClass = 'text-zinc-400') {
+      const consoleLog = document.getElementById('webhook-logs-console');
+      if (!consoleLog) return;
+      
+      const placeholder = consoleLog.querySelector('.text-brand-green\\/70');
+      if (placeholder) placeholder.remove();
+      
+      const time = new Date().toLocaleTimeString();
+      const newLog = document.createElement('span');
+      newLog.className = `block font-mono ${colorClass}`;
+      newLog.innerHTML = `[${time}] ${msg}`;
+      consoleLog.appendChild(newLog);
+      consoleLog.scrollTop = consoleLog.scrollHeight;
+    }
+
+    function showActionToast(message) {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      
+      const toast = document.createElement('div');
+      toast.className = "flex items-center gap-3 bg-zinc-950/90 border border-brand-purple/30 px-4 py-3 rounded-xl shadow-purpleGlow text-xs font-semibold text-white pointer-events-auto transition-all duration-300 animate-slideIn select-none";
+      toast.innerHTML = `
+        <div class="w-6 h-6 rounded bg-brand-purple/20 border border-brand-purple/30 flex items-center justify-center text-brand-purpleLight text-[10px]">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.className = "flex items-center gap-3 bg-zinc-950/90 border border-brand-purple/30 px-4 py-3 rounded-xl shadow-purpleGlow text-xs font-semibold text-white pointer-events-auto transition-all duration-500 opacity-0 translate-x-12 select-none";
+        setTimeout(() => { toast.remove(); }, 500);
+      }, 3500);
+    }
+
+    function showSaleToast(platform, amount) {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      
+      const toast = document.createElement('div');
+      toast.className = "flex items-center gap-3 bg-brand-green/10 border border-brand-green/30 px-4 py-3.5 rounded-xl shadow-greenGlow text-xs font-bold text-white pointer-events-auto select-none transition-all duration-500 animate-slideIn";
+      toast.innerHTML = `
+        <div class="w-8 h-8 rounded-lg bg-brand-green/20 border border-brand-green/30 flex items-center justify-center text-brand-green text-sm shadow-greenGlow">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div>
+          <span class="block text-[8px] text-brand-green font-black uppercase tracking-wider">Pix Aprovado (+R$ ${amount.toFixed(2).replace('.', ',')})</span>
+          <span class="block text-[10px] text-white font-extrabold mt-0.5">Nova Compra em ${platform}</span>
+        </div>
+      `;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.className = "flex items-center gap-3 bg-brand-green/10 border border-brand-green/30 px-4 py-3.5 rounded-xl shadow-greenGlow text-xs font-bold text-white pointer-events-auto select-none transition-all duration-500 opacity-0 translate-y-[-10px]";
+        setTimeout(() => { toast.remove(); }, 500);
+      }, 5000);
+    }
+
+    function spawnGoldCoins() {
+      const container = document.body;
+      const coinCount = 20;
+      for (let i = 0; i < coinCount; i++) {
+        const coin = document.createElement('div');
+        coin.className = "fixed pointer-events-none text-xl z-[10000] animate-coinFall select-none";
+        coin.innerText = "🪙";
+        coin.style.left = Math.random() * 100 + "vw";
+        coin.style.top = "-50px";
+        coin.style.animationDelay = Math.random() * 0.8 + "s";
+        coin.style.animationDuration = 1.2 + Math.random() * 1.2 + "s";
+        container.appendChild(coin);
+        setTimeout(() => { coin.remove(); }, 3000);
+      }
+    }
+
+    function simulateWebhookSale() {
+      // 1. Sound
+      playChime();
+      
+      // 2. Gold coins shower
+      spawnGoldCoins();
+      
+      // 3. Stats update
+      simulatedSalesCount++;
+      const amounts = [37.90, 47.90, 67.90];
+      const amount = amounts[Math.floor(Math.random() * amounts.length)];
+      accumulatedFaturamento += amount;
+      
+      // Update totals
+      document.getElementById('total-revenue').innerHTML = `R$ ${accumulatedFaturamento.toFixed(2).replace('.', ',')}`;
+      
+      const badge = document.getElementById('live-sales-count-badge');
+      if (badge) {
+        badge.innerText = `${simulatedSalesCount} ${simulatedSalesCount === 1 ? 'Venda' : 'Vendas'}`;
+      }
+
+      // Update Conversion card
+      const convRate = document.getElementById('conversion-rate');
+      const convProg = document.getElementById('conversion-progress');
+      if (convRate && convProg) {
+        convRate.innerText = "84.2%";
+        convProg.style.width = "84.2%";
+        const cardParent = convRate.closest('.metric-card');
+        if (cardParent) {
+          const firstLabel = cardParent.querySelector('.mt-4 > span');
+          if (firstLabel) {
+            firstLabel.className = "px-2 py-0.5 rounded bg-brand-green/20 text-brand-greenLight text-[8px] font-black uppercase tracking-wider select-none font-mono";
+            firstLabel.innerText = "CONEXÃO ATIVA";
+          }
+        }
+      }
+
+      // Update Daily Objective Card
+      const progressLabel = document.getElementById('meta-progress-label');
+      const remainingLabel = document.getElementById('meta-remaining-label');
+      const progressBar = document.getElementById('meta-progress-bar');
+      
+      if (progressLabel && remainingLabel && progressBar) {
+        const pct = (accumulatedFaturamento / 50000) * 100;
+        progressLabel.innerText = `R$ ${accumulatedFaturamento.toFixed(2).replace('.', ',')} (${pct.toFixed(2)}%)`;
+        remainingLabel.innerText = `Restam R$ ${(50000 - accumulatedFaturamento).toFixed(2).replace('.', ',')}`;
+        progressBar.style.width = `${Math.min(pct, 100)}%`;
+      }
+      
+      // 4. Webhook Log Terminal message
+      const platformName = activeGateway ? gatewayConfig[activeGateway].name : "Kiwify Checkout";
+      appendWebhookLog(`<span class="text-brand-green">[WEBHOOK RECEIV]</span> POST /api/webhook?gateway=${activeGateway || 'kiwify'} - 200 OK`, 'text-brand-green font-bold');
+      appendWebhookLog(`<span class="text-zinc-500">Payload: { event: "order.approved", amount: ${amount}, platform: "${platformName}" }</span>`);
+      appendWebhookLog(`[SISTEMA] Dashboard de vendas e métricas sincronizadas com sucesso.`, 'text-zinc-400 font-semibold');
+
+      // 5. Toast notification
+      showSaleToast(platformName, amount);
+
+      // 6. Append to live feed
+      const feed = document.getElementById('live-conversions-list');
+      if (feed) {
+        // Clear empty state if first sale
+        if (simulatedSalesCount === 1) {
+          feed.innerHTML = '';
+        }
+        
+        const saleDiv = document.createElement('div');
+        saleDiv.className = "p-3 border border-brand-green/20 bg-brand-green/5 rounded-xl flex items-center justify-between animate-slideUp w-full";
+        saleDiv.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-brand-green/10 flex items-center justify-center text-brand-green text-xs font-bold shadow-greenGlow">
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <div class="text-left">
+              <span class="block text-[9px] font-bold text-white uppercase">[${platformName.split(' ')[0]}] Venda Aprovada</span>
+              <span class="block text-[7px] text-zinc-400 mt-0.5">Pix Aprovado / Processado</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="block text-[9px] font-mono font-black text-brand-green">+R$ ${amount.toFixed(2).replace('.', ',')}</span>
+            <span class="block text-[7px] text-zinc-500 font-mono">Agora mesmo</span>
+          </div>
+        `;
+        feed.insertBefore(saleDiv, feed.firstChild);
+      }
+
+      // 7. Update graph curve
+      const svg = document.querySelector('svg');
+      if (svg) {
+        const areaPath = svg.querySelector('path[fill="url(#chart-grad)"]');
+        const strokePath = svg.querySelector('path[fill="none"]');
+        const circle = svg.querySelector('circle');
+        
+        if (areaPath && strokePath && circle) {
+          let cy = 190;
+          let dArea = "";
+          let dStroke = "";
+          
+          if (simulatedSalesCount === 1) {
+            cy = 135;
+            dArea = "M 0 190 Q 70 190 120 180 T 250 160 T 370 145 T 500 135 L 500 200 L 0 200 Z";
+            dStroke = "M 0 190 Q 70 190 120 180 T 250 160 T 370 145 T 500 135";
+          } else if (simulatedSalesCount === 2) {
+            cy = 95;
+            dArea = "M 0 190 Q 70 190 120 165 T 250 130 T 370 110 T 500 95 L 500 200 L 0 200 Z";
+            dStroke = "M 0 190 Q 70 190 120 165 T 250 130 T 370 110 T 500 95";
+          } else {
+            cy = 50;
+            dArea = "M 0 190 Q 70 190 120 150 T 250 100 T 370 75 T 500 50 L 500 200 L 0 200 Z";
+            dStroke = "M 0 190 Q 70 190 120 150 T 250 100 T 370 75 T 500 50";
+          }
+          
+          areaPath.setAttribute('d', dArea);
+          strokePath.setAttribute('d', dStroke);
+          circle.setAttribute('cy', cy);
+        }
+        
+        const picoBox = svg.closest('.relative').querySelector('.bg-brand-green\\/10');
+        if (picoBox) {
+          picoBox.innerText = `PICO: R$ ${amount.toFixed(2).replace('.', ',')}`;
+        }
+      }
+    }
+  </script>
+</body>
+</html>
