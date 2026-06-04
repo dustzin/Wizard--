@@ -232,8 +232,11 @@
       <button onclick="switchTab('integrations-tab', this)" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-textGray hover:text-white hover:bg-white/5 transition-all text-xs text-left tab-btn">
         <i class="fa-solid fa-circle-nodes"></i> Integrações de Checkout
       </button>
-      <button onclick="switchTab('bonus-tab', this)" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-textGray hover:text-white hover:bg-white/5 transition-all text-xs text-left tab-btn" id="sidebar-bonus-btn">
+      <button onclick="triggerBonusAccess(this)" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-textGray hover:text-white hover:bg-white/5 transition-all text-xs text-left tab-btn" id="sidebar-bonus-btn">
         <i class="fa-solid fa-gift text-brand-purpleLight"></i> Método Tráfego Invisível
+      </button>
+      <button onclick="switchTab('affiliate-tab', this)" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-textGray hover:text-white hover:bg-white/5 transition-all text-xs text-left tab-btn" id="sidebar-affiliate-btn">
+        <i class="fa-solid fa-share-nodes text-brand-greenLight"></i> Indique e Ganhe
       </button>
     </div>
 
@@ -272,19 +275,36 @@
       <!-- ========================================== -->
       <div id="dashboard-tab" class="tab-content active space-y-6">
         
-        <!-- Top Banner: Wizard Pro Painel de Controle -->
-        <div class="glass border border-brand-purple/10 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden" style="background: linear-gradient(135deg, rgba(20,10,40,0.45) 0%, rgba(10,5,25,0.45) 100%);">
-          <div class="absolute -right-24 -top-24 w-48 h-48 rounded-full bg-brand-purple/10 blur-3xl"></div>
-          <div class="space-y-2 relative z-10">
-            <span class="px-2.5 py-1 rounded-full bg-brand-purple/15 text-[8px] font-black text-brand-purpleLight uppercase tracking-[0.25em] border border-brand-purple/20"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> SISTEMA OPERACIONAL WIZARD</span>
-            <h2 class="font-outfit font-black text-2xl text-white tracking-tight leading-none">Painel de Controle <span class="text-brand-purpleLight font-bold">WIZARD PRO</span></h2>
-            <p class="text-[10px] text-zinc-400 font-medium leading-relaxed max-w-2xl">
-              Monitore suas vendas em tempo real, acompanhe gráficos de faturamento integrados e inicie o assistente inteligente para estruturar novos infoprodutos completos de alta conversão.
+        <!-- Top Banner: Indique e Ganhe (Replaces Wizard Pro banner) -->
+        <div class="glass border border-brand-green/20 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden" style="background: linear-gradient(135deg, rgba(10,35,20,0.4) 0%, rgba(5,20,10,0.4) 100%);">
+          <div class="absolute -right-24 -top-24 w-48 h-48 rounded-full bg-brand-green/10 blur-3xl"></div>
+          <div class="absolute -left-24 -bottom-24 w-48 h-48 rounded-full bg-brand-purple/10 blur-3xl"></div>
+          
+          <div class="space-y-2 relative z-10 flex-1 text-left">
+            <span class="px-2.5 py-1 rounded-full bg-brand-green/15 text-[8.5px] font-black text-brand-greenLight uppercase tracking-[0.25em] border border-brand-green/20"><i class="fa-solid fa-share-nodes mr-1 text-brand-green"></i> INDIQUE A WIZARD E FATURE</span>
+            <h2 class="font-outfit font-black text-2xl text-white tracking-tight leading-none">Indique e Ganhe <span class="text-brand-greenLight font-bold">10% de Comissão</span></h2>
+            <p class="text-[10px] text-zinc-400 font-medium leading-relaxed max-w-xl">
+              Recomende a Wizard para seus amigos de infoprodutos e ganhe **10% de todas as vendas** que eles fizerem de forma automática! Compartilhe o link abaixo:
             </p>
+            
+            <!-- Quick Link Box inside dashboard banner -->
+            <div class="flex gap-2 max-w-md pt-2 select-all">
+              <input type="text" readonly id="dash-banner-affiliate-link" class="bg-black/60 border border-brand-border rounded-lg px-3 py-2 text-[9.5px] font-mono text-zinc-300 w-full focus:outline-none" value="https://wizardlp.vercel.app/?ref=wz84729">
+              <button onclick="copyAffiliateLink('dash-banner-affiliate-link', this)" class="px-3 py-2 bg-brand-green text-black font-extrabold text-[10px] rounded-lg hover:shadow-greenGlow transition-all duration-300 shrink-0 uppercase tracking-wider select-none">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
           </div>
-          <button onclick="switchTab('wizard-tab', document.querySelector('button[onclick*=\'wizard-tab\']'))" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-purple to-brand-purpleLight text-xs font-black text-white hover:shadow-purpleGlow transition-all duration-300 flex items-center gap-2 group border border-white/10 shrink-0 relative z-10 shadow-purpleGlow">
-            Criar Novo Produto <i class="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1"></i>
-          </button>
+          
+          <!-- Actions on the right side of banner -->
+          <div class="flex flex-col gap-2.5 relative z-10 shrink-0 select-none w-full md:w-auto">
+            <button onclick="switchTab('affiliate-tab', document.getElementById('sidebar-affiliate-btn'))" class="px-5 py-3 rounded-xl bg-gradient-to-r from-brand-green to-brand-greenLight text-xs font-black text-black hover:shadow-greenGlow transition-all duration-300 flex items-center justify-center gap-2 border border-white/10 shadow-greenGlow/20">
+              <i class="fa-solid fa-wallet"></i> Ver Meus Ganhos <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </button>
+            <button onclick="switchTab('wizard-tab', document.querySelector('button[onclick*=\'wizard-tab\']'))" class="px-5 py-2 bg-white/5 hover:bg-white/10 text-white font-bold text-[10px] rounded-xl border border-white/10 transition-all text-center">
+              Criar Novo Produto
+            </button>
+          </div>
         </div>
 
         <!-- 2-Column Responsive Layout -->
@@ -529,8 +549,40 @@
               </div>
 
               <!-- CTA Button to navigate to dedicated tab -->
-              <button onclick="switchTab('bonus-tab', document.getElementById('sidebar-bonus-btn'))" class="w-full py-2.5 bg-gradient-to-r from-brand-purple to-brand-purpleLight text-white rounded-xl text-[10px] font-black tracking-wider uppercase hover:shadow-purpleGlow transition-all duration-300 flex items-center justify-center gap-2 relative z-10 shadow-purpleGlow/20">
+              <button onclick="triggerBonusAccess(document.getElementById('sidebar-bonus-btn'))" class="w-full py-2.5 bg-gradient-to-r from-brand-purple to-brand-purpleLight text-white rounded-xl text-[10px] font-black tracking-wider uppercase hover:shadow-purpleGlow transition-all duration-300 flex items-center justify-center gap-2 relative z-10 shadow-purpleGlow/20">
                 <i class="fa-solid fa-graduation-cap"></i> Acessar Conteúdo Completo
+              </button>
+            </div>
+
+            <!-- Card de Indicação Rápida (Indique e Ganhe) -->
+            <div class="glass border border-brand-green/20 rounded-2xl p-5 relative overflow-hidden flex flex-col hover:border-brand-green/40 transition-all duration-500 shadow-greenGlow/5" style="box-shadow: 0 0 45px rgba(0,0,0,0.35);">
+              <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-brand-green/10 blur-xl"></div>
+              
+              <div class="flex justify-between items-center pb-3 border-b border-white/5 mb-3">
+                <span class="text-[9px] font-black text-brand-greenLight uppercase tracking-widest flex items-center gap-1.5 select-none">
+                  <i class="fa-solid fa-share-nodes"></i> INDIQUE E GANHE 10%
+                </span>
+                <span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse"></span>
+              </div>
+              
+              <p class="text-[9.5px] text-zinc-400 font-medium leading-relaxed mb-4">
+                Recomende a Wizard para seus amigos e fature **10% de comissão** em todas as vendas que eles realizarem!
+              </p>
+
+              <!-- Link box -->
+              <div class="space-y-2 mb-4">
+                <label class="block text-[8px] font-bold text-zinc-500 uppercase tracking-widest select-none">Seu Link de Indicação</label>
+                <div class="flex gap-2">
+                  <input type="text" readonly id="dash-affiliate-link" class="flex-1 bg-black/40 border border-brand-border rounded-lg px-2.5 py-1.5 text-[9px] font-mono text-zinc-300 focus:outline-none select-all" value="https://wizardlp.vercel.app/?ref=wz84729">
+                  <button onclick="copyAffiliateLink('dash-affiliate-link', this)" class="px-2.5 py-1 bg-brand-green/20 text-brand-greenLight hover:bg-brand-green/30 border border-brand-green/30 rounded-lg text-[9px] font-bold transition-all shrink-0">
+                    <i class="fa-regular fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- CTA Button to navigate to dedicated tab -->
+              <button onclick="switchTab('affiliate-tab', document.getElementById('sidebar-affiliate-btn'))" class="w-full py-2.5 bg-gradient-to-r from-brand-green/20 to-brand-green/35 text-white hover:text-brand-greenLight border border-brand-green/30 rounded-xl text-[9px] font-black tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 relative z-10 shadow-greenGlow/10 select-none">
+                <i class="fa-solid fa-wallet"></i> Ver Painel de Afiliado
               </button>
             </div>
 
@@ -971,6 +1023,30 @@
               </div>
             </div>
 
+            <!-- Indique e Ganhe Banner de Conclusão -->
+            <div class="mt-8 glass border border-brand-green/20 bg-gradient-to-r from-brand-green/5 to-brand-purple/5 rounded-xl p-5 flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden shadow-greenGlow/5 select-none animate-slideUp">
+              <div class="absolute -right-24 -top-24 w-48 h-48 rounded-full bg-brand-green/10 blur-3xl"></div>
+              <div class="space-y-2 relative z-10 text-left flex-1">
+                <span class="px-2.5 py-1 rounded-full bg-brand-green/10 text-[8px] font-black text-brand-greenLight uppercase tracking-[0.2em] border border-brand-green/20">
+                  <i class="fa-solid fa-share-nodes"></i> LOOP VIRAL ATIVO
+                </span>
+                <h4 class="font-outfit font-black text-xs text-white uppercase tracking-wider mt-1.5">Quer faturar 10% adicionais nas vendas dos seus amigos?</h4>
+                <p class="text-[10px] text-zinc-400 font-medium leading-relaxed max-w-xl">
+                  Seus amigos também vendem infoprodutos? Copie seu link abaixo e indique a Wizard para eles. Você ganha **10% de comissão** em todas as vendas que eles fizerem!
+                </p>
+              </div>
+
+              <!-- Link Box in success screen -->
+              <div class="w-full md:w-80 shrink-0 space-y-2 relative z-10">
+                <div class="flex gap-2">
+                  <input type="text" readonly id="success-affiliate-link" class="flex-1 bg-black/55 border border-brand-border rounded-lg px-2.5 py-2 text-[9px] font-mono text-zinc-300 focus:outline-none select-all" value="https://wizardlp.vercel.app/?ref=wz84729">
+                  <button onclick="copyAffiliateLink('success-affiliate-link', this)" class="px-3 bg-brand-green/20 text-brand-greenLight hover:bg-brand-green/30 border border-brand-green/30 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all">
+                    <i class="fa-regular fa-copy"></i> Copiar Link
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div class="pt-6 border-t border-brand-border text-center">
               <button onclick="resetWizard()" class="px-6 py-2.5 rounded-lg border border-brand-border hover:border-brand-borderHover text-zinc-500 hover:text-white transition-all text-xs font-semibold">
                 <i class="fa-solid fa-rotate-left mr-1"></i> Criar Novo Infoproduto
@@ -1275,6 +1351,163 @@ Quem quiser o material, comenta 'EU QUERO' aqui embaixo que eu mando no seu Dire
                 <div class="flex justify-between">
                   <span class="text-zinc-500">VALOR PERCEBIDO:</span>
                   <span class="text-brand-purpleLight font-extrabold">R$ 997,90</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 5: PROGRAMA DE AFILIADOS (INDIQUE E GANHE) -->
+      <!-- ========================================== -->
+      <div id="affiliate-tab" class="tab-content space-y-6">
+        
+        <!-- Top Banner: Indique e Ganhe -->
+        <div class="glass border border-brand-green/20 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden" style="background: linear-gradient(135deg, rgba(10,35,20,0.4) 0%, rgba(5,20,10,0.4) 100%); font-sans">
+          <div class="absolute -right-24 -top-24 w-48 h-48 rounded-full bg-brand-green/10 blur-3xl"></div>
+          <div class="absolute -left-24 -bottom-24 w-48 h-48 rounded-full bg-brand-purple/10 blur-3xl"></div>
+          
+          <div class="space-y-2 relative z-10 text-left">
+            <span class="px-2.5 py-1 rounded-full bg-brand-green/15 text-[8px] font-black text-brand-greenLight uppercase tracking-[0.25em] border border-brand-green/20"><i class="fa-solid fa-share-nodes mr-1"></i> PROGRAMA DE INDICAÇÃO</span>
+            <h2 class="font-outfit font-black text-2xl text-white tracking-tight leading-none">Indique e Ganhe <span class="text-brand-greenLight">10%</span></h2>
+            <p class="text-[10px] text-zinc-400 font-medium leading-relaxed max-w-2xl">
+              Compartilhe a Wizard com seus amigos do mercado digital. Você recebe **10% de comissão recorrente** sobre todas as vendas que seus indicados realizarem nas estruturas automáticas deles.
+            </p>
+          </div>
+
+          <!-- Commission rate highlight -->
+          <div class="flex items-center gap-3 bg-gradient-to-r from-brand-green/20 to-brand-purple/20 border border-white/10 px-5 py-3 rounded-2xl relative z-10 shrink-0 select-none shadow-greenGlow/10">
+            <div class="text-right">
+              <span class="block text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Sua Taxa de Ganho</span>
+              <span class="block text-base text-brand-green font-black uppercase tracking-wider animate-pulse">10% COMISSÃO</span>
+            </div>
+            <div class="w-8 h-8 rounded-lg bg-brand-green/20 flex items-center justify-center text-brand-green text-sm shadow-greenGlow animate-bounce">
+              <i class="fa-solid fa-percent"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sans">
+          
+          <!-- Left Column (Affiliate Info & Referrals) -->
+          <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Referral Link and Copy -->
+            <div class="glass border border-brand-border rounded-2xl p-6 space-y-4 text-left">
+              <h3 class="font-outfit font-black text-xs text-white uppercase tracking-wider flex items-center gap-2 select-none">
+                <i class="fa-solid fa-link text-brand-greenLight"></i> Compartilhe seu Link de Afiliado
+              </h3>
+              <p class="text-[10px] text-zinc-400 leading-relaxed font-medium">
+                Sempre que alguém cadastrar uma conta e começar a rodar estruturas automáticas de vendas pelo seu link abaixo, a atribuição é registrada permanentemente em seu perfil:
+              </p>
+              
+              <div class="flex flex-col sm:flex-row gap-3">
+                <div class="flex-1 bg-black/40 border border-brand-border rounded-xl px-4 py-3 flex items-center">
+                  <i class="fa-solid fa-globe text-zinc-600 mr-2.5 text-xs select-none"></i>
+                  <input type="text" readonly id="main-affiliate-link" class="bg-transparent border-none text-zinc-300 font-mono text-[10px] w-full focus:outline-none select-all" value="https://wizardlp.vercel.app/?ref=wz84729">
+                </div>
+                <button onclick="copyAffiliateLink('main-affiliate-link', this)" class="px-5 py-3 bg-brand-green text-black font-extrabold text-xs rounded-xl hover:shadow-greenGlow transition-all duration-300 shrink-0 uppercase tracking-wider select-none">
+                  <i class="fa-regular fa-copy mr-1"></i> Copiar Link
+                </button>
+              </div>
+            </div>
+
+            <!-- Referrals List Table -->
+            <div class="glass border border-brand-border rounded-2xl p-6 space-y-4 text-left">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-white/5">
+                <h3 class="font-outfit font-black text-xs text-white uppercase tracking-wider flex items-center gap-2 select-none">
+                  <i class="fa-solid fa-users text-brand-purpleLight"></i> Indicados Ativos e Comissões
+                </h3>
+                <!-- Simulate sale button -->
+                <button onclick="simulateReferralSale()" class="px-3 py-1.5 bg-brand-purple/20 hover:bg-brand-purple/35 text-brand-purpleLight hover:text-white border border-brand-purple/30 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all select-none">
+                  <i class="fa-solid fa-wand-magic-sparkles mr-1 animate-pulse"></i> Simular Venda de Indicado
+                </button>
+              </div>
+
+              <!-- Table -->
+              <div class="overflow-x-auto no-scrollbar">
+                <table class="w-full text-left border-collapse min-w-[500px]">
+                  <thead>
+                    <tr class="border-b border-white/5 text-[8.5px] text-zinc-500 uppercase tracking-widest select-none">
+                      <th class="py-2.5 font-bold">Nome do Indicado</th>
+                      <th class="py-2.5 font-bold text-center">Status</th>
+                      <th class="py-2.5 font-bold text-center">Vendas Geradas</th>
+                      <th class="py-2.5 font-bold text-right">Faturamento Total</th>
+                      <th class="py-2.5 font-bold text-right text-brand-greenLight">Sua Comissão (10%)</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-[9.5px] font-medium text-zinc-300 divide-y divide-white/5" id="referrals-table-body">
+                    <tr id="referrals-empty-row">
+                      <td colspan="5" class="py-8 text-center text-zinc-500 font-medium select-none">
+                        <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/5 text-zinc-600 mb-2 mx-auto">
+                          <i class="fa-solid fa-users"></i>
+                        </div>
+                        Nenhum indicado cadastrado ainda. Compartilhe seu link acima para começar!
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column -->
+          <div class="space-y-6 lg:col-span-1 flex flex-col justify-start">
+            
+            <!-- Affiliate Balance Card (Wallet) -->
+            <div class="glass border border-brand-green/20 rounded-2xl p-5 relative overflow-hidden shadow-greenGlow/5 text-left" id="affiliate-wallet-card">
+              <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-brand-green/10 blur-xl"></div>
+              
+              <div class="flex justify-between items-center pb-3 border-b border-white/5 mb-4 select-none">
+                <span class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Saldo de Indicações</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse"></span>
+              </div>
+
+              <div class="space-y-3">
+                <div class="text-[8px] text-zinc-500 font-black uppercase tracking-wider select-none">Saldo Disponível para Saque</div>
+                <div class="text-3xl font-black text-white tracking-tight flex items-baseline gap-1" id="affiliate-balance-amount">
+                  R$ 0,00
+                </div>
+
+                <div class="pt-2 select-none">
+                  <button onclick="openWithdrawModal()" class="w-full py-3 bg-gradient-to-r from-brand-green to-brand-greenLight text-black font-black rounded-xl text-[10px] tracking-wider uppercase hover:shadow-greenGlow transition-all duration-300 flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-wallet"></i> Solicitar Saque via Pix
+                  </button>
+                  <span class="block text-[7.5px] text-zinc-500 mt-2 font-bold uppercase tracking-wider text-center">Saques automáticos em até 5 minutos via Pix</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Program Analytics Stats -->
+            <div class="glass border border-brand-border rounded-2xl p-5 space-y-4 text-left">
+              <h4 class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2 select-none">
+                📈 Métricas de Convites
+              </h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-black/35 border border-white/5 rounded-xl p-3 text-center">
+                  <div class="text-white font-extrabold text-sm font-mono" id="aff-clicks-count">0</div>
+                  <div class="text-[7.5px] text-zinc-500 uppercase tracking-wider mt-0.5 select-none">Cliques no Link</div>
+                </div>
+                <div class="bg-black/35 border border-white/5 rounded-xl p-3 text-center">
+                  <div class="text-white font-extrabold text-sm font-mono" id="aff-signups-count">0</div>
+                  <div class="text-[7.5px] text-zinc-500 uppercase tracking-wider mt-0.5 select-none">Cadastros</div>
+                </div>
+              </div>
+
+              <div class="space-y-2.5 font-mono text-[9px] pt-2 border-t border-white/5">
+                <div class="flex justify-between">
+                  <span class="text-zinc-500 select-none">TAXA DE CONVERSÃO:</span>
+                  <span class="text-brand-green font-bold" id="aff-conv-rate font-mono">0.00%</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-zinc-500 select-none">ESTIMATIVA DE ROI:</span>
+                  <span class="text-brand-purpleLight font-extrabold">Infinito</span>
                 </div>
               </div>
             </div>
@@ -1685,6 +1918,45 @@ Quem quiser o material, comenta 'EU QUERO' aqui embaixo que eu mando no seu Dire
         resetBonusChat();
       }
     }
+
+    let savedBonusBtn = null;
+
+    function triggerBonusAccess(btn) {
+      savedBonusBtn = btn || document.getElementById('sidebar-bonus-btn');
+      const popup = document.getElementById('bonus-popup-modal');
+      if (popup) {
+        popup.classList.remove('hidden');
+        popup.classList.add('flex');
+        
+        // Initial dopamine chime and coin drop
+        playChime();
+        spawnGoldCoins();
+      }
+    }
+
+    function closeBonusPopup() {
+      const popup = document.getElementById('bonus-popup-modal');
+      if (popup) {
+        popup.classList.remove('flex');
+        popup.classList.add('hidden');
+      }
+    }
+
+    function confirmBonusAccess() {
+      closeBonusPopup();
+      
+      // Dual high-density dopamine rewards!
+      playChime();
+      spawnGoldCoins();
+      setTimeout(() => {
+        spawnGoldCoins();
+      }, 350);
+
+      if (savedBonusBtn) {
+        switchTab('bonus-tab', savedBonusBtn);
+      }
+    }
+
 
     function selectNiche(nicheKey) {
       selectedNiche = nicheKey;
@@ -2534,7 +2806,128 @@ Quem quiser o material, comenta 'EU QUERO' aqui embaixo que eu mando no seu Dire
         <button onclick="testGatewaySimulation()" class="px-4 py-2.5 bg-brand-green/20 hover:bg-brand-green/30 text-brand-greenLight border border-brand-green/30 rounded-lg text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1.5 shrink-0" id="test-simulation-btn">
           <i class="fa-solid fa-vial"></i> Testar Webhook (Simular Pix)
         </button>
+      </div>
+    </div>
   </div>
+
+  <!-- ============================================== -->
+  <!-- POPUP: BÔNUS DE ELITE VALOR CORTE / GRATUIDADE -->
+  <!-- ============================================== -->
+  <div id="bonus-popup-modal" class="fixed inset-0 z-[99999] bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="glass border border-brand-purple/20 w-full max-w-md rounded-3xl p-6 md:p-8 space-y-6 relative overflow-hidden animate-scaleUp text-center shadow-purpleGlowStrong">
+      <!-- Glow lights -->
+      <div class="absolute -right-16 -top-16 w-36 h-36 rounded-full bg-brand-purple/20 blur-2xl animate-pulse"></div>
+      <div class="absolute -left-16 -bottom-16 w-36 h-36 rounded-full bg-brand-green/20 blur-2xl animate-pulse"></div>
+      
+      <!-- Close button -->
+      <button onclick="closeBonusPopup()" class="absolute top-4 right-4 text-zinc-500 hover:text-white transition-all text-sm select-none">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- Dopamine Pulsing Icon -->
+      <div class="flex justify-center select-none pt-2">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-r from-brand-purple to-brand-purpleLight border border-white/20 flex items-center justify-center text-white text-3xl shadow-purpleGlowStrong animate-bounce">
+          <i class="fa-solid fa-gift animate-pulse"></i>
+        </div>
+      </div>
+
+      <!-- Header Copy -->
+      <div class="space-y-2">
+        <span class="inline-block px-3 py-1 rounded-full bg-brand-purple/15 text-[8px] font-black text-brand-purpleLight uppercase tracking-[0.2em] border border-brand-purple/20">
+          <i class="fa-solid fa-lock-open mr-1 text-brand-green"></i> BÔNUS DE ELITE EXCLUSIVO
+        </span>
+        <h3 class="font-outfit font-black text-xl text-white tracking-tight uppercase">Método Tráfego Invisível</h3>
+        <p class="text-[10px] text-zinc-400 font-medium leading-relaxed max-w-sm mx-auto">
+          Diga adeus ao medo de não conseguir vender. Você acaba de receber acesso vitalício a um método manual e validado de vendas rápidas sem gastar nada.
+        </p>
+      </div>
+
+      <!-- Dopamine Price Card -->
+      <div class="bg-gradient-to-br from-brand-purple/5 to-brand-green/5 border border-white/10 rounded-2xl p-5 space-y-2 relative select-none">
+        <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-brand-green/20 text-brand-greenLight border border-brand-green/30 text-[7px] font-black uppercase tracking-wider font-mono animate-pulse">100% OFF</div>
+        <div class="text-zinc-500 text-[9px] font-bold uppercase tracking-widest line-through">Valor Original: R$ 997,90</div>
+        <div class="text-2xl font-black text-brand-green tracking-wide drop-shadow-greenGlow flex items-center justify-center gap-1.5 animate-pulse">
+          Hoje: <span class="bg-brand-green/10 px-3 py-1 rounded-xl border border-brand-green/20 text-brand-greenLight">GRATUITO</span>
+        </div>
+        <p class="text-[8px] text-zinc-400 font-bold uppercase tracking-widest mt-1">
+          <i class="fa-solid fa-circle-check text-brand-green mr-1"></i> Acesso Liberado para o seu perfil
+        </p>
+      </div>
+
+      <!-- Main Call-To-Action -->
+      <div class="pt-2 select-none">
+        <button onclick="confirmBonusAccess()" class="w-full py-3.5 bg-gradient-to-r from-brand-purple to-brand-green text-white rounded-xl text-xs font-black tracking-wider uppercase hover:shadow-purpleGlowStrong transition-all duration-300 flex items-center justify-center gap-2 group relative border border-white/10">
+          Aproveitar Bônus Gratuito <i class="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1"></i>
+        </button>
+        <span class="block text-[8px] text-zinc-500 mt-2.5 font-bold uppercase tracking-widest">Oferta exclusiva inclusa na sua assinatura Wizard Pro</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: PIX WITHDRAWAL (SAQUE VIA PIX) -->
+  <!-- ============================================== -->
+  <div id="withdraw-modal" class="fixed inset-0 z-[99999] bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="glass border border-brand-green/20 w-full max-w-sm rounded-3xl p-6 md:p-8 space-y-6 relative overflow-hidden animate-scaleUp text-center shadow-greenGlow">
+      <!-- Glow lights -->
+      <div class="absolute -right-16 -top-16 w-36 h-36 rounded-full bg-brand-green/10 blur-2xl animate-pulse"></div>
+      
+      <!-- Close button -->
+      <button onclick="closeWithdrawModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white transition-all text-sm select-none">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- Pix Logo Icon -->
+      <div class="flex justify-center select-none pt-2">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-r from-emerald-500 to-brand-green border border-white/20 flex items-center justify-center text-black text-3xl shadow-greenGlow">
+          <i class="fa-solid fa-money-bill-transfer"></i>
+        </div>
+      </div>
+
+      <!-- Header Copy -->
+      <div class="space-y-2">
+        <h3 class="font-outfit font-black text-base text-white tracking-tight uppercase">Transferência Pix Automática</h3>
+        <p class="text-[10px] text-zinc-400 font-medium leading-relaxed max-w-xs mx-auto">
+          Saque suas comissões acumuladas diretamente para a sua conta bancária sem taxas de transação.
+        </p>
+      </div>
+
+      <!-- Amount details -->
+      <div class="bg-black/45 border border-white/10 rounded-xl p-3.5 select-none">
+        <span class="block text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Valor Solicitado</span>
+        <span class="block text-xl font-black text-brand-greenLight mt-0.5" id="withdraw-amount-label">R$ 213,40</span>
+      </div>
+
+      <!-- Form Inputs -->
+      <div class="space-y-4 text-left">
+        <!-- Key Type -->
+        <div class="space-y-1.5">
+          <label class="block text-[8.5px] font-bold text-zinc-500 uppercase tracking-widest select-none">Tipo de Chave Pix</label>
+          <select id="withdraw-key-type" class="w-full bg-black/55 border border-brand-border rounded-lg px-3 py-2 text-[10px] text-white focus:outline-none focus:border-brand-green/50">
+            <option value="cpf" class="bg-[#0B0D15]">CPF</option>
+            <option value="email" class="bg-[#0B0D15]">E-mail</option>
+            <option value="celular" class="bg-[#0B0D15]">Celular</option>
+            <option value="aleatoria" class="bg-[#0B0D15]">Chave Aleatória</option>
+          </select>
+        </div>
+
+        <!-- Chave Pix -->
+        <div class="space-y-1.5">
+          <label class="block text-[8.5px] font-bold text-zinc-500 uppercase tracking-widest select-none">Sua Chave Pix</label>
+          <input type="text" id="withdraw-pix-key" class="w-full bg-black/55 border border-brand-border rounded-lg px-3 py-2 text-[10px] font-mono text-white placeholder-zinc-600 focus:outline-none focus:border-brand-green/50" placeholder="Insira sua chave Pix aqui...">
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-2 select-none" id="withdraw-actions">
+        <button onclick="processWithdraw()" class="w-full py-3.5 bg-gradient-to-r from-brand-green to-brand-greenLight text-black font-black rounded-xl text-xs tracking-wider uppercase hover:shadow-greenGlow transition-all duration-300 flex items-center justify-center gap-1.5">
+          Confirmar Transferência Pix
+        </button>
+      </div>
+    </div>
+  </div>
+
+
 
   <!-- Modal removed - Content migrated to dedicated Tab -->
 
@@ -3109,6 +3502,239 @@ Comenta 'EU QUERO' aqui que eu te chamo no Direct para passar!"`
           label.className = "text-brand-purpleLight font-bold";
         }
       }
+    }
+
+    // ==============================================
+    // PROGRAMA DE AFILIADOS: LOGÍSTICA E CONTROLES
+    // ==============================================
+    let affiliateBalance = 0.00;
+    let clicksCount = 0;
+    let signupsCount = 0;
+
+    const simulatedPool = [
+      { id: 1, name: "Marcos Paulo", initials: "MP", time: "Cadastrado agora mesmo" },
+      { id: 2, name: "Fernanda Lima", initials: "FL", time: "Cadastrado agora mesmo" },
+      { id: 3, name: "Thiago Souza", initials: "TS", time: "Cadastrado agora mesmo" },
+      { id: 4, name: "Rodrigo Melo", initials: "RM", time: "Cadastrado agora mesmo" },
+      { id: 5, name: "Amanda Costa", initials: "AC", time: "Cadastrado agora mesmo" }
+    ];
+
+    const activeReferrals = {};
+
+    function copyAffiliateLink(elementId, btn) {
+      const input = document.getElementById(elementId);
+      if (!input) return;
+      
+      navigator.clipboard.writeText(input.value).then(() => {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<i class="fa-solid fa-check text-brand-green animate-bounce"></i>`;
+        
+        // Handle class updates based on button styles
+        const originalClass = btn.className;
+        if (originalClass.includes('bg-brand-green/20')) {
+          btn.className = btn.className.replace('text-brand-greenLight', 'text-brand-green').replace('bg-brand-green/20', 'bg-brand-green/30');
+        } else if (originalClass.includes('bg-brand-green')) {
+          btn.className = btn.className.replace('text-black', 'text-white').replace('bg-brand-green', 'bg-brand-green/80');
+        }
+
+        showActionToast("Link de Indicação copiado com sucesso!");
+        
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.className = originalClass;
+        }, 2000);
+      });
+    }
+
+    function simulateReferralSale() {
+      const activeIds = Object.keys(activeReferrals);
+      
+      // Determine if we should add a new user or make an existing one sell
+      const shouldAddNew = activeIds.length === 0 || (activeIds.length < simulatedPool.length && Math.random() > 0.55);
+      
+      let refId;
+      
+      if (shouldAddNew) {
+        // Find next available pool user
+        const nextUser = simulatedPool.find(u => !activeReferrals[u.id]);
+        refId = nextUser.id;
+        
+        // Register in state
+        activeReferrals[refId] = {
+          name: nextUser.name,
+          initials: nextUser.initials,
+          time: nextUser.time,
+          sales: 0,
+          revenue: 0.00,
+          commission: 0.00
+        };
+
+        // Increment Clicks & Signups
+        clicksCount += Math.floor(Math.random() * 8) + 4;
+        signupsCount += 1;
+        
+        // Update stats UI
+        const clicksEl = document.getElementById('aff-clicks-count');
+        const signupsEl = document.getElementById('aff-signups-count');
+        const convEl = document.getElementById('aff-conv-rate');
+        
+        if (clicksEl) clicksEl.innerText = clicksCount;
+        if (signupsEl) signupsEl.innerText = signupsCount;
+        if (convEl) {
+          const rate = ((signupsCount / clicksCount) * 100).toFixed(2);
+          convEl.innerText = `${rate}%`;
+        }
+
+        // Update referrals list table HTML (remove empty state row if first signup)
+        const tableBody = document.getElementById('referrals-table-body');
+        if (tableBody) {
+          const emptyRow = document.getElementById('referrals-empty-row');
+          if (emptyRow) emptyRow.remove();
+
+          const newRow = document.createElement('tr');
+          newRow.id = `ref-row-${refId}`;
+          newRow.className = "hover:bg-white/[0.02] transition-colors animate-slideUp";
+          newRow.innerHTML = `
+            <td class="py-3 flex items-center gap-2">
+              <div class="w-6 h-6 rounded-full bg-brand-purple/15 text-brand-purpleLight flex items-center justify-center font-bold text-[9px] uppercase border border-brand-purple/20 select-none">${nextUser.initials}</div>
+              <div>
+                <span class="block text-white font-semibold">${nextUser.name}</span>
+                <span class="block text-[7.5px] text-zinc-500">${nextUser.time}</span>
+              </div>
+            </td>
+            <td class="py-3 text-center select-none">
+              <span class="px-2 py-0.5 rounded bg-brand-green/10 border border-brand-green/20 text-brand-greenLight text-[7px] font-extrabold uppercase font-mono">Ativo</span>
+            </td>
+            <td class="py-3 text-center font-mono font-bold text-white text-[10px]" id="ref-sales-${refId}">0</td>
+            <td class="py-3 text-right font-mono font-bold text-white" id="ref-revenue-${refId}">R$ 0,00</td>
+            <td class="py-3 text-right font-mono font-black text-brand-green" id="ref-commission-${refId}">R$ 0,00</td>
+          `;
+          tableBody.appendChild(newRow);
+        }
+      } else {
+        // Choose a random active user to make a sale
+        refId = activeIds[Math.floor(Math.random() * activeIds.length)];
+      }
+
+      const ref = activeReferrals[refId];
+      
+      // Random sale values
+      const saleValues = [47.90, 97.00, 197.00];
+      const saleValue = saleValues[Math.floor(Math.random() * saleValues.length)];
+      const commission = saleValue * 0.10;
+      
+      // Update stats state
+      ref.sales++;
+      ref.revenue += saleValue;
+      ref.commission += commission;
+      affiliateBalance += commission;
+
+      // Update UI Table
+      const salesEl = document.getElementById(`ref-sales-${refId}`);
+      const revEl = document.getElementById(`ref-revenue-${refId}`);
+      const commEl = document.getElementById(`ref-commission-${refId}`);
+      
+      if (salesEl) salesEl.innerText = ref.sales;
+      if (revEl) revEl.innerText = `R$ ${ref.revenue.toFixed(2).replace('.', ',')}`;
+      if (commEl) commEl.innerText = `R$ ${ref.commission.toFixed(2).replace('.', ',')}`;
+
+      // Update UI Balance Card & Withdraw Label
+      const balEl = document.getElementById('affiliate-balance-amount');
+      const wLabel = document.getElementById('withdraw-amount-label');
+      if (balEl) balEl.innerText = `R$ ${affiliateBalance.toFixed(2).replace('.', ',')}`;
+      if (wLabel) wLabel.innerText = `R$ ${affiliateBalance.toFixed(2).replace('.', ',')}`;
+
+      // Dopamine triggers
+      playChime();
+      spawnGoldCoins();
+
+      // Commission toast notification
+      const container = document.getElementById('toast-container');
+      if (container) {
+        const toast = document.createElement('div');
+        toast.className = "flex items-center gap-3 bg-brand-green/10 border border-brand-green/30 px-4 py-3.5 rounded-xl shadow-greenGlow text-xs font-bold text-white pointer-events-auto select-none transition-all duration-500 animate-slideIn";
+        toast.innerHTML = `
+          <div class="w-8 h-8 rounded-lg bg-brand-green/20 border border-brand-green/30 flex items-center justify-center text-brand-green text-sm shadow-greenGlow">
+            <i class="fa-solid fa-share-nodes"></i>
+          </div>
+          <div>
+            <span class="block text-[8px] text-brand-green font-black uppercase tracking-wider">Comissão de Indicação (+R$ ${commission.toFixed(2).replace('.', ',')})</span>
+            <span class="block text-[10px] text-white font-extrabold mt-0.5">Venda de ${ref.name}</span>
+          </div>
+        `;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.className = "flex items-center gap-3 bg-brand-green/10 border border-brand-green/30 px-4 py-3.5 rounded-xl shadow-greenGlow text-xs font-bold text-white pointer-events-auto select-none transition-all duration-500 opacity-0 translate-y-[-10px]";
+          setTimeout(() => { toast.remove(); }, 500);
+        }, 4000);
+      }
+    }
+
+    function openWithdrawModal() {
+      if (affiliateBalance <= 0) {
+        showActionToast("Você não possui saldo acumulado para saque no momento!");
+        return;
+      }
+      
+      const modal = document.getElementById('withdraw-modal');
+      const wLabel = document.getElementById('withdraw-amount-label');
+      if (wLabel) wLabel.innerText = `R$ ${affiliateBalance.toFixed(2).replace('.', ',')}`;
+      
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeWithdrawModal() {
+      const modal = document.getElementById('withdraw-modal');
+      if (modal) {
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+      }
+    }
+
+    function processWithdraw() {
+      const keyInput = document.getElementById('withdraw-pix-key');
+      const keyVal = keyInput ? keyInput.value.trim() : "";
+      
+      if (!keyVal) {
+        alert("Por favor, preencha sua chave Pix para receber a transferência.");
+        return;
+      }
+
+      const actionsContainer = document.getElementById('withdraw-actions');
+      if (!actionsContainer) return;
+      
+      const originalHtml = actionsContainer.innerHTML;
+      actionsContainer.innerHTML = `
+        <button disabled class="w-full py-3.5 bg-zinc-800 border border-white/5 text-zinc-500 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-not-allowed">
+          <i class="fa-solid fa-spinner animate-spin"></i> Processando Transferência Pix...
+        </button>
+      `;
+
+      setTimeout(() => {
+        // Complete withdrawal simulation
+        const amountWithdrawn = affiliateBalance;
+        affiliateBalance = 0;
+
+        // Reset UI Balance Labels
+        const balEl = document.getElementById('affiliate-balance-amount');
+        if (balEl) balEl.innerText = "R$ 0,00";
+
+        // Dopamine chime and double coin drops!
+        playChime();
+        spawnGoldCoins();
+        setTimeout(() => { spawnGoldCoins(); }, 350);
+
+        // Close modal and show success toast
+        closeWithdrawModal();
+        showActionToast(`Saque de R$ ${amountWithdrawn.toFixed(2).replace('.', ',')} realizado com sucesso via Pix!`);
+        
+        // Restore actions panel HTML for next interactions
+        actionsContainer.innerHTML = originalHtml;
+        if (keyInput) keyInput.value = "";
+      }, 2000);
     }
   </script>
 </body>
