@@ -268,7 +268,7 @@
     </header>
 
     <!-- Scrollable content panel -->
-    <div class="flex-1 p-6 md:p-8 overflow-y-auto no-scrollbar space-y-6 max-w-5xl w-full mx-auto">
+    <div class="flex-1 p-6 pb-24 md:pb-8 md:p-8 overflow-y-auto no-scrollbar space-y-6 max-w-5xl w-full mx-auto">
       
       <!-- ========================================== -->
       <!-- TAB 1: DASHBOARD MAIN (ZEROED OUT FOR CLIENT) -->
@@ -1903,14 +1903,34 @@ Quem quiser o material, comenta 'EU QUERO' aqui embaixo que eu mando no seu Dire
     let selectedNiche = '';
     let selectedColor = 'purple';
 
-    function switchTab(tabId, btn) {
+    function switchTab(tabId, btn = null) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       
+      // Update Sidebar buttons state
       document.querySelectorAll('.tab-btn').forEach(b => {
         b.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-textGray hover:text-white hover:bg-white/5 transition-all text-xs text-left tab-btn";
       });
-      btn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-brand-purple/10 border border-brand-purple/20 text-white font-medium text-xs shadow-purpleGlow transition-all tab-btn";
+      // Find matching sidebar button
+      let targetSidebarBtn = null;
+      if (tabId === 'dashboard-tab') targetSidebarBtn = document.querySelector('button[onclick*="dashboard-tab"]');
+      else if (tabId === 'wizard-tab') targetSidebarBtn = document.querySelector('button[onclick*="wizard-tab"]');
+      else if (tabId === 'integrations-tab') targetSidebarBtn = document.querySelector('button[onclick*="integrations-tab"]');
+      else if (tabId === 'bonus-tab') targetSidebarBtn = document.getElementById('sidebar-bonus-btn');
+      else if (tabId === 'affiliate-tab') targetSidebarBtn = document.getElementById('sidebar-affiliate-btn');
+      
+      if (targetSidebarBtn) {
+        targetSidebarBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-brand-purple/10 border border-brand-purple/20 text-white font-medium text-xs shadow-purpleGlow transition-all tab-btn";
+      }
+
+      // Update Mobile bottom nav buttons state
+      document.querySelectorAll('.mobile-tab-btn').forEach(b => {
+        b.className = "flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-300 text-brand-textGray hover:text-white text-[8px] flex-1 mobile-tab-btn";
+      });
+      const activeMobileBtn = document.querySelector(`.mobile-tab-btn[data-mobile-tab="${tabId}"]`);
+      if (activeMobileBtn) {
+        activeMobileBtn.className = "flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-300 text-brand-purpleLight font-semibold text-[8px] flex-1 mobile-tab-btn bg-brand-purple/10 border border-brand-purple/10";
+      }
 
       if (tabId === 'bonus-tab') {
         playChime();
@@ -1918,6 +1938,7 @@ Quem quiser o material, comenta 'EU QUERO' aqui embaixo que eu mando no seu Dire
         resetBonusChat();
       }
     }
+
 
     let savedBonusBtn = null;
 
@@ -2926,6 +2947,38 @@ Quem quiser o material, comenta 'EU QUERO' aqui embaixo que eu mando no seu Dire
       </div>
     </div>
   </div>
+
+  <!-- ============================================== -->
+  <!-- FLOATING BOTTOM NAVIGATION FOR MOBILE DEVICES -->
+  <!-- ============================================== -->
+  <div class="fixed bottom-4 left-4 right-4 z-40 lg:hidden glass border border-white/10 rounded-2xl px-2 py-2 flex justify-around items-center shadow-purpleGlow select-none">
+    <!-- Tab 1: Dashboard -->
+    <button onclick="switchTab('dashboard-tab', this)" class="flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-300 text-brand-purpleLight font-semibold text-[8px] flex-1 mobile-tab-btn bg-brand-purple/10 border border-brand-purple/10" data-mobile-tab="dashboard-tab">
+      <i class="fa-solid fa-chart-line text-sm mb-0.5"></i>
+      <span>Painel</span>
+    </button>
+    <!-- Tab 2: Wizard Generator -->
+    <button onclick="switchTab('wizard-tab', this)" class="flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-300 text-brand-textGray hover:text-white text-[8px] flex-1 mobile-tab-btn" data-mobile-tab="wizard-tab">
+      <i class="fa-solid fa-wand-magic text-sm mb-0.5"></i>
+      <span>Criar</span>
+    </button>
+    <!-- Tab 3: Integrations -->
+    <button onclick="switchTab('integrations-tab', this)" class="flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-300 text-brand-textGray hover:text-white text-[8px] flex-1 mobile-tab-btn" data-mobile-tab="integrations-tab">
+      <i class="fa-solid fa-circle-nodes text-sm mb-0.5"></i>
+      <span>Integrar</span>
+    </button>
+    <!-- Tab 4: Elite Bonus -->
+    <button onclick="triggerBonusAccess(this)" class="flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-300 text-brand-textGray hover:text-white text-[8px] flex-1 mobile-tab-btn" data-mobile-tab="bonus-tab">
+      <i class="fa-solid fa-gift text-sm mb-0.5"></i>
+      <span>Bônus</span>
+    </button>
+    <!-- Tab 5: Indique e Ganhe -->
+    <button onclick="switchTab('affiliate-tab', this)" class="flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-300 text-brand-textGray hover:text-white text-[8px] flex-1 mobile-tab-btn" data-mobile-tab="affiliate-tab">
+      <i class="fa-solid fa-share-nodes text-sm mb-0.5"></i>
+      <span>Indique</span>
+    </button>
+  </div>
+
 
 
 
