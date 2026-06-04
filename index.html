@@ -73,16 +73,50 @@
       display: block;
       animation: fade 0.35s ease forwards;
     }
+
+    /* Accordion transitions */
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .accordion-chevron {
+      transition: transform 0.3s ease;
+    }
+    .badge-glow {
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+    }
     @keyframes fade {
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    
+    /* Pop-in animation for chat simulator bubbles */
+    .chat-bubble {
+      animation: bubblePop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      transform-origin: left bottom;
+    }
+    .chat-bubble.justify-end {
+      transform-origin: right bottom;
+    }
+    @keyframes bubblePop {
+      0% {
+        opacity: 0;
+        transform: scale(0.85) translateY(12px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
     #particle-canvas {
       position: absolute;
       inset: 0;
       pointer-events: none;
       z-index: 1;
     }
+
 
     /* Wait Stage Keyframe Compiler Scanner */
     @keyframes scanline {
@@ -197,6 +231,9 @@
       </button>
       <button onclick="switchTab('integrations-tab', this)" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-textGray hover:text-white hover:bg-white/5 transition-all text-xs text-left tab-btn">
         <i class="fa-solid fa-circle-nodes"></i> Integrações de Checkout
+      </button>
+      <button onclick="switchTab('bonus-tab', this)" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-textGray hover:text-white hover:bg-white/5 transition-all text-xs text-left tab-btn" id="sidebar-bonus-btn">
+        <i class="fa-solid fa-gift text-brand-purpleLight"></i> Método Tráfego Invisível
       </button>
     </div>
 
@@ -385,32 +422,118 @@
 
           </div>
 
-          <!-- Right Column (Conversões Ao Vivo - Zeroed) -->
-          <div class="glass border border-brand-border rounded-2xl p-5 flex flex-col justify-between" style="box-shadow: 0 0 45px rgba(0,0,0,0.35);">
-            <div class="space-y-4">
-              <div class="flex justify-between items-center pb-3 border-b border-white/5">
-                <div class="flex items-center gap-2">
-                  <span class="w-2 h-2 rounded-full bg-zinc-600"></span>
-                  <h3 class="font-outfit font-black text-xs text-white uppercase tracking-wider">Conversões Ao Vivo</h3>
+          <!-- Right Column Container -->
+          <div class="space-y-6 lg:col-span-1 flex flex-col justify-start">
+            
+            <!-- Conversões Ao Vivo -->
+            <div class="glass border border-brand-border rounded-2xl p-5 flex flex-col justify-between" style="box-shadow: 0 0 45px rgba(0,0,0,0.35);">
+              <div class="space-y-4">
+                <div class="flex justify-between items-center pb-3 border-b border-white/5">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-zinc-600"></span>
+                    <h3 class="font-outfit font-black text-xs text-white uppercase tracking-wider">Conversões Ao Vivo</h3>
+                  </div>
+                  <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-zinc-400 text-[8px] font-black uppercase tracking-widest font-mono" id="live-sales-count-badge">0 Vendas</span>
                 </div>
-                <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-zinc-400 text-[8px] font-black uppercase tracking-widest font-mono" id="live-sales-count-badge">0 Vendas</span>
+
+                <!-- Empty State conversions container -->
+                <div class="space-y-3 max-h-[200px] overflow-y-auto pr-1 no-scrollbar flex flex-col items-center justify-center text-center py-10" id="live-conversions-list">
+                  <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center border border-white/10 text-zinc-500 mb-2">
+                    <i class="fa-solid fa-chart-line text-lg"></i>
+                  </div>
+                  <div>
+                    <span class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Aguardando Vendas</span>
+                    <span class="block text-[8px] text-zinc-500 mt-1 leading-relaxed max-w-[180px] mx-auto">Conecte seu gateway no menu lateral de Integrações para receber notificações Pix em tempo real.</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="pt-4 border-t border-white/5 text-center text-[8px] text-zinc-500 font-mono select-none">
+                NENHUMA VENDA DETECTADA HOJE
+              </div>
+            </div>
+
+            <!-- Bônus de Elite Card -->
+            <div class="glass border border-brand-border rounded-2xl p-5 relative overflow-hidden flex flex-col hover:border-brand-purple/30 transition-all duration-500" style="box-shadow: 0 0 45px rgba(0,0,0,0.35);">
+              <!-- Top Glow -->
+              <div class="absolute -right-16 -top-16 w-36 h-36 rounded-full bg-brand-purple/5 blur-2xl"></div>
+              
+              <div class="flex items-center gap-2 mb-2 relative z-10">
+                <span class="px-2 py-0.5 rounded bg-brand-purple/20 text-brand-purpleLight text-[8px] font-black uppercase tracking-wider animate-pulse border border-brand-purple/30 shadow-purpleGlow/20">Bônus de Elite ✦</span>
+                <span class="text-[9px] text-zinc-500 font-mono">100% INCLUSO</span>
+              </div>
+              
+              <h3 class="font-outfit font-black text-sm text-white leading-tight mb-2 relative z-10 flex items-center gap-1.5 select-none">
+                🎁 Método Tráfego Invisível
+              </h3>
+
+              <!-- Dopamine Value Badge -->
+              <div class="my-3 p-3 bg-gradient-to-r from-brand-purple/10 to-brand-green/10 border border-brand-purple/20 rounded-xl relative overflow-hidden flex items-center justify-between z-10 select-none">
+                <div class="absolute -right-4 -top-4 w-12 h-12 rounded-full bg-brand-green/20 blur-xl"></div>
+                <div class="space-y-0.5">
+                  <span class="block text-[8px] text-zinc-500 font-bold uppercase tracking-wider line-through">De R$ 997,90</span>
+                  <span class="block text-[11px] text-brand-green font-black uppercase tracking-widest animate-bounce">Hoje: GRATUITO</span>
+                </div>
+                <span class="text-[8px] font-black text-brand-green bg-brand-green/15 border border-brand-green/30 px-2 py-1 rounded-lg uppercase tracking-wider animate-pulse flex items-center gap-1 badge-glow">
+                  <i class="fa-solid fa-lock-open text-[9px]"></i> Liberado
+                </span>
               </div>
 
-              <!-- Empty State conversions container -->
-              <div class="space-y-3 max-h-[360px] overflow-y-auto pr-1 no-scrollbar flex flex-col items-center justify-center text-center py-20" id="live-conversions-list">
-                <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center border border-white/10 text-zinc-500 mb-2">
-                  <i class="fa-solid fa-chart-line text-lg"></i>
+              <p class="text-[9px] text-zinc-400 font-medium leading-relaxed mb-4 relative z-10">
+                O seu plano de contingência blindado para botar dinheiro no bolso nas próximas 24 horas usando o Direct Response e o algoritmo das redes sociais.
+              </p>
+
+              <!-- Mini Accordion modules list -->
+              <div class="space-y-2 relative z-10 mb-4 flex-1">
+                <!-- Module 1 -->
+                <div class="border border-white/5 bg-white/5 hover:bg-white/10 rounded-xl overflow-hidden transition-all duration-300">
+                  <button onclick="toggleBonusModule(1)" class="w-full px-3 py-2.5 flex items-center justify-between text-left text-[9px] font-bold text-white transition-all select-none">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-magnifying-glass text-brand-purpleLight text-[10px]"></i> MÓDULO 1: Grupos de Ouro</span>
+                    <i class="fa-solid fa-chevron-down text-[8px] transition-transform duration-300 accordion-chevron" id="bonus-chevron-1"></i>
+                  </button>
+                  <div id="bonus-content-1" class="accordion-content border-t border-white/5 text-[9px] text-zinc-400 space-y-2 leading-relaxed">
+                    <div class="p-3 bg-black/20 space-y-2">
+                      <p>• Mapeie comunidades e grupos ultra-aquecidos de WhatsApp e Facebook cheios de compradores reais.</p>
+                      <p>• O processo exato de aquecimento de perfil para interagir sem nunca ser bloqueado ou marcado como spam.</p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <span class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Aguardando Vendas</span>
-                  <span class="block text-[8px] text-zinc-500 mt-1 leading-relaxed max-w-[180px] mx-auto">Conecte seu gateway no menu lateral de Integrações para receber notificações Pix em tempo real.</span>
+
+                <!-- Module 2 -->
+                <div class="border border-white/5 bg-white/5 hover:bg-white/10 rounded-xl overflow-hidden transition-all duration-300">
+                  <button onclick="toggleBonusModule(2)" class="w-full px-3 py-2.5 flex items-center justify-between text-left text-[9px] font-bold text-white transition-all select-none">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-file-signature text-brand-purpleLight text-[10px]"></i> MÓDULO 2: A Postagem Isca</span>
+                    <i class="fa-solid fa-chevron-down text-[8px] transition-transform duration-300 accordion-chevron" id="bonus-chevron-2"></i>
+                  </button>
+                  <div id="bonus-content-2" class="accordion-content border-t border-white/5 text-[9px] text-zinc-400 space-y-2 leading-relaxed">
+                    <div class="p-3 bg-black/20 space-y-2">
+                      <p>• Crie textos isca em formato de história que forçam o algoritmo a panfletar sua publicação de graça.</p>
+                      <p>• Modelo pronto de copiar e colar que faz dezenas de leads implorarem pelo seu produto nos comentários.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Module 3 -->
+                <div class="border border-white/5 bg-white/5 hover:bg-white/10 rounded-xl overflow-hidden transition-all duration-300">
+                  <button onclick="toggleBonusModule(3)" class="w-full px-3 py-2.5 flex items-center justify-between text-left text-[9px] font-bold text-white transition-all select-none">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-comments text-brand-purpleLight text-[10px]"></i> MÓDULO 3: O Script Proibido</span>
+                    <i class="fa-solid fa-chevron-down text-[8px] transition-transform duration-300 accordion-chevron" id="bonus-chevron-3"></i>
+                  </button>
+                  <div id="bonus-content-3" class="accordion-content border-t border-white/5 text-[9px] text-zinc-400 space-y-2 leading-relaxed">
+                    <div class="p-3 bg-black/20 space-y-2">
+                      <p>• Mova o lead do comentário direto para o seu privado com 100% de receptividade.</p>
+                      <p>• Script em 3 passos exatos para gerar conexão, entregar o material e fechar a venda de forma natural.</p>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              <!-- CTA Button to navigate to dedicated tab -->
+              <button onclick="switchTab('bonus-tab', document.getElementById('sidebar-bonus-btn'))" class="w-full py-2.5 bg-gradient-to-r from-brand-purple to-brand-purpleLight text-white rounded-xl text-[10px] font-black tracking-wider uppercase hover:shadow-purpleGlow transition-all duration-300 flex items-center justify-center gap-2 relative z-10 shadow-purpleGlow/20">
+                <i class="fa-solid fa-graduation-cap"></i> Acessar Conteúdo Completo
+              </button>
             </div>
-            
-            <div class="pt-4 border-t border-white/5 text-center text-[8px] text-zinc-500 font-mono select-none">
-              NENHUMA VENDA DETECTADA HOJE
-            </div>
+
           </div>
 
         </div>
@@ -911,6 +1034,257 @@
         </div>
       </div>
 
+      <!-- ========================================== -->
+      <!-- TAB 4: BÔNUS DE ELITE (MÉTODO TRÁFEGO INVISÍVEL) -->
+      <!-- ========================================== -->
+      <div id="bonus-tab" class="tab-content space-y-6">
+        
+        <!-- Top Banner: Bônus de Elite -->
+        <div class="glass border border-brand-purple/10 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden" style="background: linear-gradient(135deg, rgba(20,10,40,0.45) 0%, rgba(10,5,25,0.45) 100%);">
+          <div class="absolute -right-24 -top-24 w-48 h-48 rounded-full bg-brand-purple/10 blur-3xl"></div>
+          <div class="absolute -left-24 -bottom-24 w-48 h-48 rounded-full bg-brand-green/10 blur-3xl"></div>
+          
+          <div class="space-y-2 relative z-10">
+            <span class="px-2.5 py-1 rounded-full bg-brand-purple/15 text-[8px] font-black text-brand-purpleLight uppercase tracking-[0.25em] border border-brand-purple/20"><i class="fa-solid fa-gift mr-1"></i> BÔNUS DE ELITE EXCLUSIVO</span>
+            <h2 class="font-outfit font-black text-2xl text-white tracking-tight leading-none">Método Tráfego Invisível</h2>
+            <p class="text-[10px] text-zinc-400 font-medium leading-relaxed max-w-2xl">
+              Domine o método manual de vendas Direct Response e use o algoritmo das redes sociais para fazer dinheiro no bolso nas próximas 24 horas sem investir 1 centavo em tráfego pago.
+            </p>
+          </div>
+
+          <!-- Dopamine Value Highlight -->
+          <div class="flex items-center gap-3 bg-gradient-to-r from-brand-purple/20 to-brand-green/20 border border-white/10 px-5 py-3 rounded-2xl relative z-10 shrink-0 select-none shadow-greenGlow/10">
+            <div class="text-right">
+              <span class="block text-[8px] text-zinc-500 font-bold uppercase tracking-wider line-through">De R$ 997,90</span>
+              <span class="block text-xs text-brand-green font-black uppercase tracking-wider animate-bounce">Hoje: GRATUITO</span>
+            </div>
+            <div class="w-8 h-8 rounded-lg bg-brand-green/20 flex items-center justify-center text-brand-green text-sm shadow-greenGlow animate-pulse">
+              <i class="fa-solid fa-lock-open"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2-Column Responsive Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Left/Center Column (Modules) -->
+          <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Module 1 details -->
+            <div class="glass border border-brand-border rounded-2xl p-6 space-y-4">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-brand-purple/15 text-brand-purpleLight border border-brand-purple/25 text-[8px] font-black uppercase font-mono">Módulo 1</span>
+                <h3 class="font-outfit font-black text-xs text-white uppercase tracking-wider">O Segredo dos Grupos de Ouro</h3>
+              </div>
+              
+              <div class="text-[10px] leading-relaxed text-zinc-400 font-medium space-y-3">
+                <p>
+                  Diga adeus ao medo de não conseguir vender. Se você não quiser depender apenas das automações, este método manual e validado de Direct Response é o seu plano de contingência blindado para botar dinheiro no bolso nas próximas 24 horas usando o algoritmo das redes sociais a seu favor.
+                </p>
+                <div class="bg-black/45 border border-white/5 rounded-xl p-4 space-y-3">
+                  <div class="flex items-start gap-2.5">
+                    <span class="w-4 h-4 rounded-full bg-brand-green/15 text-brand-green flex items-center justify-center text-[10px] mt-0.5 shrink-0">✓</span>
+                    <p><b>Como garimpar e mapear comunidades e grupos ultra-aquecidos:</b> Pesquise por termos de dor e interesse nas barras de busca do WhatsApp e Facebook (ex: "emagrecer saudável", "renda extra orgânica"). Foque em grupos públicos com postagens recentes diárias e interação real, evitando grupos abandonados. Guarde os 5 melhores links em sua lista de divulgação.</p>
+                  </div>
+                  <div class="flex items-start gap-2.5">
+                    <span class="w-4 h-4 rounded-full bg-brand-green/15 text-brand-green flex items-center justify-center text-[10px] mt-0.5 shrink-0">✓</span>
+                    <p><b>O processo exato de aquecimento de perfil:</b> Antes de postar links, passe 2 dias curtindo e comentando de forma genuína em outras postagens. Isso constrói reputação algorítmica (score de perfil real) para que você possa interagir sem nunca ser bloqueado ou marcado como spam.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Module 2 details -->
+            <div class="glass border border-brand-border rounded-2xl p-6 space-y-4">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-brand-purple/15 text-brand-purpleLight border border-brand-purple/25 text-[8px] font-black uppercase font-mono">Módulo 2</span>
+                <h3 class="font-outfit font-black text-xs text-white uppercase tracking-wider">A Cópia da Postagem Isca (A Engenharia Psicológica)</h3>
+              </div>
+              
+              <div class="text-[10px] leading-relaxed text-zinc-400 font-medium space-y-4">
+                <p>
+                  Esqueça posts chatos com links de vendas. Você vai aprender a criar textos isca em formato de história que forçam o algoritmo a panfletar sua publicação de graça. Abaixo, selecione o seu nicho e copie o modelo de postagem isca correspondente:
+                </p>
+
+                <!-- Interactive Copy Post Template -->
+                <div class="space-y-4">
+                  <div class="flex items-center gap-2">
+                    <button onclick="selectNicheTemplate('saude')" id="btn-tmpl-saude" class="px-3 py-1.5 bg-brand-purple text-white border border-brand-purple/30 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all select-none">Saúde</button>
+                    <button onclick="selectNicheTemplate('financas')" id="btn-tmpl-financas" class="px-3 py-1.5 bg-white/5 text-zinc-400 hover:text-white border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all select-none">Finanças</button>
+                    <button onclick="selectNicheTemplate('relacionamentos')" id="btn-tmpl-relacionamentos" class="px-3 py-1.5 bg-white/5 text-zinc-400 hover:text-white border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all select-none">Relacionamentos</button>
+                  </div>
+
+                  <!-- Post Mockup -->
+                  <div class="glass border border-white/5 rounded-xl p-4 space-y-3 font-sans relative">
+                    <span class="absolute top-2 right-2 text-[6px] font-black text-brand-green bg-brand-green/10 border border-brand-green/20 px-1.5 py-0.5 rounded uppercase tracking-wider">Facebook Mockup</span>
+                    
+                    <!-- Profile Row -->
+                    <div class="flex items-center gap-2 select-none">
+                      <div class="w-8 h-8 rounded-full bg-brand-purple/20 flex items-center justify-center text-xs font-black border border-brand-purple/30 text-brand-purpleLight">
+                        RS
+                      </div>
+                      <div>
+                        <span class="block text-[9.5px] font-bold text-white">Renata Silva</span>
+                        <span class="block text-[8px] text-zinc-500 font-medium">há 2 horas • <i class="fa-solid fa-earth-americas"></i></span>
+                      </div>
+                    </div>
+
+                    <!-- Text Content -->
+                    <div class="text-zinc-300 text-[9.5px] leading-relaxed whitespace-pre-wrap select-all font-mono" id="bonus-niche-text">"Gente, eu estava muito mal com o meu peso (já tinha tentado de tudo) e acabei encontrando um guia prático com receitas secretas criadas por IA que me fez eliminar 4kg em apenas 10 dias de forma super simples.
+
+Para ajudar quem está na mesma situação, eu consegui o link do PDF gratuito para os primeiros que comentarem. 
+
+Quem quiser o material, comenta 'EU QUERO' aqui embaixo que eu mando no seu Direct!"</div>
+
+                    <!-- Footer row likes and comments -->
+                    <div class="flex items-center justify-between pt-2 border-t border-white/5 text-[8.5px] text-zinc-500 font-semibold select-none">
+                      <span>👍 ❤️ 142 curtidas</span>
+                      <span>87 comentários</span>
+                    </div>
+                  </div>
+
+                  <!-- Copy CTA -->
+                  <div class="flex justify-end pt-1">
+                    <button onclick="copyCurrentBonusPost()" class="px-4 py-2 bg-brand-purple/20 hover:bg-brand-purple/30 border border-brand-purple/30 text-brand-purpleLight hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-all" id="btn-copy-current-post">
+                      <i class="fa-regular fa-copy mr-1"></i> Copiar Copy do Post Isca
+                    </button>
+                  </div>
+                </div>
+
+                <p class="text-[9px] text-zinc-500 italic">
+                  * Nota: Quando dezenas de pessoas comentam na publicação, a plataforma orgânica entende que o engajamento é alto e distribui o seu post gratuitamente para centenas de outras contas.
+                </p>
+              </div>
+            </div>
+
+            <!-- Module 3 details -->
+            <div class="glass border border-brand-border rounded-2xl p-6 space-y-4">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-brand-purple/15 text-brand-purpleLight border border-brand-purple/25 text-[8px] font-black uppercase font-mono">Módulo 3</span>
+                <h3 class="font-outfit font-black text-xs text-white uppercase tracking-wider">O Script de Fechamento Proibido (Invisível no Direct)</h3>
+              </div>
+              
+              <div class="text-[10px] leading-relaxed text-zinc-400 font-medium space-y-4">
+                <p>
+                  O passo a passo milimétrico para mover o lead do comentário direto para o seu privado com 100% de receptividade. Abaixo está o simulador interativo de conversa. Clique em <b>Avançar Conversa</b> para ver como aplicar o script de 3 passos na prática:
+                </p>
+
+                <!-- Chat Simulator UI -->
+                <div class="space-y-4">
+                  <div class="bg-zinc-950/65 border border-white/5 rounded-xl p-4 relative" id="chat-simulator-container" style="max-height: 250px; overflow-y: auto;">
+                    <span class="absolute top-2 right-2 text-[6px] font-black text-brand-purpleLight bg-brand-purple/10 border border-brand-purple/20 px-1.5 py-0.5 rounded uppercase tracking-wider">Simulador de Conversão</span>
+                    
+                    <div class="space-y-3 min-h-[160px] flex flex-col justify-end" id="chat-bubbles-list">
+                      <!-- First message will load here -->
+                    </div>
+                  </div>
+
+                  <!-- Simulator controls -->
+                  <div class="flex justify-between items-center select-none">
+                    <button onclick="resetBonusChat()" class="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-white rounded-lg text-[8px] font-black uppercase tracking-wider transition-all">
+                      Reiniciar Conversa
+                    </button>
+                    <button onclick="advanceBonusChat()" id="btn-advance-chat" class="px-4 py-1.5 bg-brand-green/20 hover:bg-brand-green/30 border border-brand-green/30 text-brand-greenLight hover:text-white rounded-lg text-[8px] font-black uppercase tracking-wider transition-all flex items-center gap-1">
+                      Avançar Conversa <i class="fa-solid fa-chevron-right text-[7px]"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column (Checklist & Specs) -->
+          <div class="space-y-6 lg:col-span-1 flex flex-col justify-start">
+            
+            <!-- Method Status -->
+            <div class="glass border border-brand-border rounded-2xl p-5 relative overflow-hidden shadow-md">
+              <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-brand-green/5 blur-xl"></div>
+              <div class="flex justify-between items-center pb-3 border-b border-white/5 mb-3">
+                <span class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Status do Método</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse"></span>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-green/10 border border-brand-green/20 flex items-center justify-center text-brand-green text-sm shadow-greenGlow">
+                  <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                  <span class="block text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Acesso Vitalício</span>
+                  <span class="block text-[11px] text-brand-green font-black uppercase tracking-widest animate-pulse mt-0.5">100% LIBERADO</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile Warming Checklist (Gamified) -->
+            <div class="glass border border-brand-border rounded-2xl p-5 space-y-4 relative overflow-hidden hover:border-brand-purple/30 transition-all duration-300">
+              <h4 class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-fire text-orange-500 animate-pulse"></i> Checklist de Aquecimento
+              </h4>
+              <p class="text-[9px] text-zinc-400 leading-relaxed font-medium">
+                Complete as 4 tarefas abaixo para aquecer seu perfil de vendas de forma segura e desbloquear o tráfego sem bloqueios:
+              </p>
+              <div class="space-y-3 pt-2">
+                <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                  <input type="checkbox" class="mt-0.5 rounded border-white/10 bg-black/45 text-brand-purple focus:ring-brand-purple" onclick="updateWarmupProgress()">
+                  <span class="text-[9px] text-zinc-400 font-medium leading-tight"><b>Dia 1:</b> Otimizar foto e biografia (aparência humana).</span>
+                </label>
+                <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                  <input type="checkbox" class="mt-0.5 rounded border-white/10 bg-black/45 text-brand-purple focus:ring-brand-purple" onclick="updateWarmupProgress()">
+                  <span class="text-[9px] text-zinc-400 font-medium leading-tight"><b>Dia 1:</b> Curtir e comentar em 5 posts reais no grupo.</span>
+                </label>
+                <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                  <input type="checkbox" class="mt-0.5 rounded border-white/10 bg-black/45 text-brand-purple focus:ring-brand-purple" onclick="updateWarmupProgress()">
+                  <span class="text-[9px] text-zinc-400 font-medium leading-tight"><b>Dia 2:</b> Responder a uma dúvida sem colocar links.</span>
+                </label>
+                <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                  <input type="checkbox" class="mt-0.5 rounded border-white/10 bg-black/45 text-brand-purple focus:ring-brand-purple" onclick="updateWarmupProgress()">
+                  <span class="text-[9px] text-zinc-400 font-medium leading-tight"><b>Dia 3:</b> Publicar postagem isca isenta de links.</span>
+                </label>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="space-y-2 pt-2 border-t border-white/5">
+                <div class="flex justify-between text-[8px] font-mono text-zinc-500 uppercase">
+                  <span>STATUS DO AQUECIMENTO</span>
+                  <span class="text-brand-purpleLight font-bold" id="warmup-pct">0% PRONTO</span>
+                </div>
+                <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden p-0.5 border border-white/5">
+                  <div class="h-full rounded-full bg-brand-purple shadow-purpleGlow transition-all duration-500" id="warmup-bar" style="width:0%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Estimated Conversion Specs -->
+            <div class="glass border border-brand-border rounded-2xl p-5 space-y-4">
+              <h4 class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2 select-none">
+                📊 Métricas de Conversão
+              </h4>
+              <div class="space-y-3 font-mono text-[9px]">
+                <div class="flex justify-between pb-2 border-b border-white/5">
+                  <span class="text-zinc-500">MÉTODO:</span>
+                  <span class="text-white font-extrabold">Direct Response Orgânico</span>
+                </div>
+                <div class="flex justify-between pb-2 border-b border-white/5">
+                  <span class="text-zinc-500">CONVERSÃO ESTIMADA:</span>
+                  <span class="text-brand-green font-black">15% - 25%</span>
+                </div>
+                <div class="flex justify-between pb-2 border-b border-white/5">
+                  <span class="text-zinc-500">CUSTO POR LEADS:</span>
+                  <span class="text-brand-green font-black">R$ 0,00 (Orgânico)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-zinc-500">VALOR PERCEBIDO:</span>
+                  <span class="text-brand-purpleLight font-extrabold">R$ 997,90</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
   </main>
 
@@ -1304,6 +1678,12 @@
         b.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-textGray hover:text-white hover:bg-white/5 transition-all text-xs text-left tab-btn";
       });
       btn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-brand-purple/10 border border-brand-purple/20 text-white font-medium text-xs shadow-purpleGlow transition-all tab-btn";
+
+      if (tabId === 'bonus-tab') {
+        playChime();
+        spawnGoldCoins();
+        resetBonusChat();
+      }
     }
 
     function selectNiche(nicheKey) {
@@ -2092,6 +2472,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       initParticles();
       updateGatewayCards();
+      resetBonusChat();
     });
   </script>
 
@@ -2153,9 +2534,9 @@
         <button onclick="testGatewaySimulation()" class="px-4 py-2.5 bg-brand-green/20 hover:bg-brand-green/30 text-brand-greenLight border border-brand-green/30 rounded-lg text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1.5 shrink-0" id="test-simulation-btn">
           <i class="fa-solid fa-vial"></i> Testar Webhook (Simular Pix)
         </button>
-      </div>
-    </div>
   </div>
+
+  <!-- Modal removed - Content migrated to dedicated Tab -->
 
   <!-- Gateway Simulation Style Sheet -->
   <style>
@@ -2542,6 +2923,190 @@
         const picoBox = svg.closest('.relative').querySelector('.bg-brand-green\\/10');
         if (picoBox) {
           picoBox.innerText = `PICO: R$ ${amount.toFixed(2).replace('.', ',')}`;
+        }
+      }
+    }
+
+    // Toggle Accordion for Bônus Card on Dashboard
+    function toggleBonusModule(moduleId) {
+      const content = document.getElementById(`bonus-content-${moduleId}`);
+      const chevron = document.getElementById(`bonus-chevron-${moduleId}`);
+      if (!content || !chevron) return;
+      
+      const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+      
+      // Close all modules first
+      for (let i = 1; i <= 3; i++) {
+        const c = document.getElementById(`bonus-content-${i}`);
+        const ch = document.getElementById(`bonus-chevron-${i}`);
+        if (c) c.style.maxHeight = '0px';
+        if (ch) ch.style.transform = 'rotate(0deg)';
+      }
+      
+      if (!isOpen) {
+        content.style.maxHeight = content.scrollHeight + 'px';
+        chevron.style.transform = 'rotate(180deg)';
+      }
+    }
+
+    // Select templates for Module 2
+    const bonusTemplates = {
+      saude: `"Gente, eu estava muito mal com o meu peso (já tinha tentado de tudo) e acabei encontrando um guia prático com receitas secretas criadas por IA que me fez eliminar 4kg em apenas 10 dias de forma super simples.
+
+Para ajudar quem está na mesma situação, eu consegui o link do PDF gratuito para os primeiros que comentarem. 
+
+Quem quiser o material, comenta 'EU QUERO' aqui embaixo que eu mando no seu Direct!"`,
+      financas: `"Quem mais aqui está cansado de trabalhar o mês inteiro e ver o dinheiro sumir na primeira semana? Eu achei um guia gratuito montado por IA com 3 passos simples de planejamento financeiro que me ajudou a poupar meus primeiros R$ 1.500 de forma automática.
+
+Tenho o PDF livre para compartilhar aqui.
+
+Se você quer receber o passo a passo completo, escreve 'EU QUERO' que vou te enviar no privado!"`,
+      relacionamentos: `"Meninas, eu passei meses tentando lidar com a falta de atenção no meu relacionamento, até que encontrei um material sensacional sobre psicologia comportamental e comunicação. Mudou a nossa rotina em menos de 2 semanas!
+
+Se alguma de vocês estiver passando por isso e quiser dar uma olhada, eu consegui liberar o link do PDF básico.
+
+Comenta 'EU QUERO' aqui que eu te chamo no Direct para passar!"`
+    };
+
+    let activeBonusNiche = 'saude';
+
+    function selectNicheTemplate(niche) {
+      activeBonusNiche = niche;
+      const text = bonusTemplates[niche];
+      const el = document.getElementById('bonus-niche-text');
+      if (el) el.innerText = text;
+
+      // Update button classes
+      ['saude', 'financas', 'relacionamentos'].forEach(n => {
+        const btn = document.getElementById(`btn-tmpl-${n}`);
+        if (!btn) return;
+        if (n === niche) {
+          btn.className = "px-3 py-1.5 bg-brand-purple text-white border border-brand-purple/30 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all select-none";
+        } else {
+          btn.className = "px-3 py-1.5 bg-white/5 text-zinc-400 hover:text-white border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all select-none";
+        }
+      });
+    }
+
+    function copyCurrentBonusPost() {
+      const text = bonusTemplates[activeBonusNiche];
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('btn-copy-current-post');
+        if (!btn) return;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<i class="fa-solid fa-check text-brand-green animate-bounce"></i> Copiado!`;
+        btn.className = "px-4 py-2 bg-brand-green/20 border border-brand-green/30 text-brand-greenLight rounded-lg text-[9px] font-black uppercase tracking-wider transition-all";
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.className = "px-4 py-2 bg-brand-purple/20 hover:bg-brand-purple/30 border border-brand-purple/30 text-brand-purpleLight hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-all";
+        }, 2000);
+      });
+    }
+
+    // Chat dialogue simulator for Module 3
+    const chatDialogueSteps = [
+      { sender: 'lead', name: 'Laura Souza', text: 'Eu quero muito o material gratuito!' },
+      { sender: 'user', name: 'Você (Consultor)', text: 'Oi Laura! Vi seu comentário no meu post lá no grupo sobre o Guia. Tudo bem por aí? Vou te passar o PDF agora mesmo!' },
+      { sender: 'lead', name: 'Laura Souza', text: 'Tudo ótimo Renata! Quero sim, estou precisando muito desse conteúdo!' },
+      { sender: 'user', name: 'Você (Consultor)', text: 'Aqui está o link do PDF do guia com os primeiros passos: <b>[LINK_DA_LP]</b>. Ele ensina a estratégia base! Mas se você quiser ter o protocolo avançado e acelerar o processo, eu recomendo muito o guia premium com o passo a passo completo, cronograma e suporte.' },
+      { sender: 'lead', name: 'Laura Souza', text: 'Nossa legal! E como funciona esse guia premium? Qual o preço?' },
+      { sender: 'user', name: 'Você (Consultor)', text: 'O guia premium normalmente custa R$ 97,90, mas hoje eu consigo te passar o acesso vitalício com as atualizações no Pix por apenas R$ 37,90. O acesso ao material premium chega no seu email na hora. Te mando a chave Pix para garantir esse desconto?' },
+      { sender: 'lead', name: 'Laura Souza', text: 'Nossa super barato! Quero sim, pode me mandar a chave Pix por favor!' }
+    ];
+
+    let currentChatStep = 0;
+
+    function renderChatBubble(step) {
+      const list = document.getElementById('chat-bubbles-list');
+      if (!list) return;
+
+      const bubble = document.createElement('div');
+      bubble.className = "flex flex-col gap-1 chat-bubble w-full";
+      
+      const isUser = step.sender === 'user';
+      
+      bubble.innerHTML = `
+        <span class="block text-[7px] text-zinc-500 font-black uppercase tracking-wider ${isUser ? 'text-right' : 'text-left'}">${step.name}</span>
+        <div class="flex ${isUser ? 'justify-end' : 'justify-start'} w-full">
+          <div class="px-3 py-2 rounded-2xl text-[9px] max-w-[80%] font-medium leading-relaxed ${isUser ? 'bg-brand-purple/10 text-brand-purpleLight border border-brand-purple/20 rounded-tr-none' : 'bg-white/5 text-zinc-300 border border-white/10 rounded-tl-none'}">
+            ${step.text}
+          </div>
+        </div>
+      `;
+      
+      list.appendChild(bubble);
+      
+      // Limit bubble count to 3 to keep viewport clean
+      while (list.children.length > 3) {
+        list.removeChild(list.firstChild);
+      }
+      
+      const container = document.getElementById('chat-simulator-container');
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+
+    function advanceBonusChat() {
+      if (currentChatStep >= chatDialogueSteps.length) {
+        alert("Fim do script de conversão simulada!");
+        return;
+      }
+      
+      const step = chatDialogueSteps[currentChatStep];
+      renderChatBubble(step);
+      playChime();
+      currentChatStep++;
+
+      const btn = document.getElementById('btn-advance-chat');
+      if (currentChatStep >= chatDialogueSteps.length) {
+        if (btn) {
+          btn.innerHTML = `Finalizado <i class="fa-solid fa-check text-[7px]"></i>`;
+          btn.disabled = true;
+          btn.className = "px-4 py-1.5 bg-zinc-800 text-zinc-600 border border-white/5 rounded-lg text-[8px] font-black uppercase tracking-wider cursor-not-allowed select-none";
+        }
+      }
+    }
+
+    function resetBonusChat() {
+      const list = document.getElementById('chat-bubbles-list');
+      if (list) list.innerHTML = '';
+      currentChatStep = 0;
+      
+      const btn = document.getElementById('btn-advance-chat');
+      if (btn) {
+        btn.innerHTML = `Avançar Conversa <i class="fa-solid fa-chevron-right text-[7px]"></i>`;
+        btn.disabled = false;
+        btn.className = "px-4 py-1.5 bg-brand-green/20 hover:bg-brand-green/30 border border-brand-green/30 text-brand-greenLight hover:text-white rounded-lg text-[8px] font-black uppercase tracking-wider transition-all select-none";
+      }
+      
+      // Auto load first dialogue bubble on load
+      advanceBonusChat();
+    }
+
+    // Gamified checklist logic
+    function updateWarmupProgress() {
+      const inputs = document.querySelectorAll('#bonus-tab input[type="checkbox"]');
+      let checkedCount = 0;
+      inputs.forEach(i => { if (i.checked) checkedCount++; });
+      
+      const total = inputs.length || 4;
+      const pct = Math.floor((checkedCount / total) * 100);
+      
+      const label = document.getElementById('warmup-pct');
+      const bar = document.getElementById('warmup-bar');
+      
+      if (label && bar) {
+        label.innerText = `${pct}% PRONTO`;
+        bar.style.width = `${pct}%`;
+        
+        if (pct === 100) {
+          label.innerText = `100% PRONTO ★`;
+          label.className = "text-brand-green font-black";
+          playChime();
+          spawnGoldCoins();
+        } else {
+          label.className = "text-brand-purpleLight font-bold";
         }
       }
     }
